@@ -7,8 +7,9 @@
         "email": "adrram0202@gmail.com"
     },
     "contributors": [
+        "Rainsei C."
     ],
-    "repository": {},
+    "repository": {"https://github.com/adrian-rmrz/webdev-rest"},
     "dependencies": {
         "express": "^4.18.2",
         "sqlite3": "^5.1.6"
