@@ -79,16 +79,37 @@ app.get('/incidents', (req, res) => {
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
-    console.log(req.body); // uploaded data
+    dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body.case_number])
+    .then((rows) => {
+        if (rows.length != 0) {
+            res.status(500).type('txt').send('Case number ' + req.body.case_number + ' already exists');
+        } else {
+            dbRun('INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)', [req.body.case_number, req.body.date_time, req.body.code, req.body.incident, req.body.police_grid, req.body.neighborhood_number, req.body.block]);
+
+            res.status(200).type('txt').send('OK'); // <-- you may need to change this
+        };
+    }).catch((error) => {
+        res.status(500).type('txt').send('Error: ' + error);
+    });
     
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    console.log(req.body); // uploaded data
 });
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
+    dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body.case_number])
+    .then((rows) => {
+        if (rows.length === 0) {
+            res.status(500).type('txt').send('Case number ' + req.body.case_number + ' does not exists');
+        } else {
+            dbRun('DELETE FROM Incidents WHERE case_number = ?', [req.body.case_number]);
+
+            res.status(200).type('txt').send('OK'); // <-- you may need to change this
+        };
+    }).catch((error) => {
+        res.status(500).type('txt').send('Error: ' + error);
+    });
     console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
 /********************************************************************
