@@ -73,6 +73,88 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let sql = 'SELECT * FROM Incidents';
+    let params = [];
+
+    // add to 'sql' and 'params' based on 'req.query'
+    if (req.query.hasOwnProperty('start_date')) {
+        sql += ' WHERE start_date <= ?'; 
+        params.push(req.query.start_date);
+    };
+
+    if (req.query.hasOwnProperty('end_date')) {
+        if (params.length == 0) {
+            sql += ' WHERE end_date >= ?'; 
+        } else {
+            sql += ' AND end_date >= ?'; 
+        }
+        params.push(req.query.end_date);
+    };
+
+    if (req.query.hasOwnProperty('code')) {
+        let arr = req.query.code.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE code IN (?'; 
+        } else {
+            sql += ' AND code IN (?'; 
+        };
+        params.push(parseInt(arr[0]));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(parseInt(arr[i]));
+        };
+
+        sql += ')'; 
+    };
+
+    if (req.query.hasOwnProperty('grid')) {
+        let arr = req.query.police_grid.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE police_grid IN (?'; 
+        } else {
+            sql += ' AND police_grid IN (?'; 
+        };
+        params.push(parseInt(arr[0]));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(parseInt(arr[i]));
+        };
+
+        sql += ')';
+    };
+
+    if (req.query.hasOwnProperty('neighborhood')) {
+        let arr = req.query.neighborhood_number.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE neighborhood_number IN (?'; 
+        } else {
+            sql += ' AND neighborhood_number IN (?'; 
+        };
+        params.push(parseInt(arr[0]));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(parseInt(arr[i]));
+        };
+
+        sql += ')';
+    };
+
+    if (req.query.hasOwnProperty('limit')) {
+        sql += ' LIMIT ?'; 
+        params.push(parseInt(req.query.limit));
+    };
+
+    dbSelect(sql, params).then((rows) => {
+        res.status(200).type('json').send(rows);
+    }).catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
     
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
@@ -100,7 +182,7 @@ app.delete('/remove-incident', (req, res) => {
     dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body.case_number])
     .then((rows) => {
         if (rows.length === 0) {
-            res.status(500).type('txt').send('Case number ' + req.body.case_number + ' does not exists');
+            res.status(500).type('txt').send('Case number ' + req.body.case_number + ' does not exist');
         } else {
             dbRun('DELETE FROM Incidents WHERE case_number = ?', [req.body.case_number]);
 
