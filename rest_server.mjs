@@ -78,17 +78,18 @@ app.get('/incidents', (req, res) => {
 
     // add to 'sql' and 'params' based on 'req.query'
     if (req.query.hasOwnProperty('start_date')) {
-        sql += ' WHERE start_date <= ?'; 
-        params.push(req.query.start_date);
+        sql += ' WHERE date_time >= ?'; 
+        params.push(req.query.start_date + 'T00:00:00');
     };
 
     if (req.query.hasOwnProperty('end_date')) {
         if (params.length == 0) {
-            sql += ' WHERE end_date >= ?'; 
+            sql += ' WHERE date_time <= ?'; 
         } else {
-            sql += ' AND end_date >= ?'; 
+            sql += ' AND date_time <= ?'; 
         }
-        params.push(req.query.end_date);
+        params.push(req.query.end_date + 'T23:59:59');
+
     };
 
     if (req.query.hasOwnProperty('code')) {
@@ -110,7 +111,7 @@ app.get('/incidents', (req, res) => {
     };
 
     if (req.query.hasOwnProperty('grid')) {
-        let arr = req.query.police_grid.split(",");
+        let arr = req.query.grid.split(",");
 
         if (params.length == 0) {
             sql += ' WHERE police_grid IN (?'; 
@@ -128,7 +129,7 @@ app.get('/incidents', (req, res) => {
     };
 
     if (req.query.hasOwnProperty('neighborhood')) {
-        let arr = req.query.neighborhood_number.split(",");
+        let arr = req.query.neighborhood.split(",");
 
         if (params.length == 0) {
             sql += ' WHERE neighborhood_number IN (?'; 
@@ -151,12 +152,14 @@ app.get('/incidents', (req, res) => {
     };
 
     dbSelect(sql, params).then((rows) => {
+        console.log(sql);
+        console.log(params);
         res.status(200).type('json').send(rows);
     }).catch((error) => {
         res.status(500).type('txt').send(error);
     });
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // PUT request handler for new crime incident
