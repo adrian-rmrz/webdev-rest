@@ -152,8 +152,18 @@ app.get('/incidents', (req, res) => {
     };
 
     dbSelect(sql, params).then((rows) => {
-        console.log(sql);
-        console.log(params);
+        for (let i = 0; i < rows.length; i++) {
+            let originalElement = rows[i];
+            let dateParts = originalElement.date_time.split('T');
+            let date = dateParts[0];
+            let time = dateParts[1];
+
+            let jsonString = JSON.stringify(originalElement);
+            jsonString = jsonString.replace('"date_time":"' + originalElement.date_time + '"', "\"date\":\"" + date + "\",\"time\":\"" + time + "\"");
+
+            rows[i] = JSON.parse(jsonString);
+        };
+
         res.status(200).type('json').send(rows);
     }).catch((error) => {
         res.status(500).type('txt').send(error);
