@@ -63,7 +63,7 @@ app.get('/codes', (req, res) => {
     let sql = 'SELECT * FROM Codes';
     let params = [];
 
-    if (req.query.hasOwnProperty('incident_type')) {
+    if (req.query.hasOwnProperty('type')) {
         sql += ' WHERE incident_type LIKE ?';
         params.push(req.query.incident_type + "%");
     };
@@ -88,6 +88,14 @@ app.get('/codes', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        for (let i = 0; i < rows.length; i++) {
+            let originalElement = rows[i];
+            let jsonString = JSON.stringify(originalElement);
+            jsonString = jsonString.replace('"incident_type"', '"type"');
+    
+            rows[i] = JSON.parse(jsonString);
+        };
+    
         res.status(200).type('json').send(rows);
     })
     .catch((error) => {
@@ -102,8 +110,8 @@ app.get('/neighborhoods', (req, res) => {
     let sql = 'SELECT * FROM Neighborhoods';
     let params = [];
 
-    if (req.query.hasOwnProperty('neighborhood_number')) {
-        let arr = req.query.neighborhood_number.split(",");
+    if (req.query.hasOwnProperty('id')) {
+        let arr = req.query.id.split(",");
 
         sql += ' WHERE neighborhood_number IN (?';
         params.push(parseInt(arr[0]));
@@ -116,20 +124,28 @@ app.get('/neighborhoods', (req, res) => {
         sql += ')'; 
     };
 
-    if (req.query.hasOwnProperty('neighborhood_name')) {
+    if (req.query.hasOwnProperty('name')) {
         if (params.length === 0) {
             sql += ' WHERE neighborhood_name LIKE ?';
-            
         }
         else {
             sql += ' AND neighborhood_name LIKE ?';
         }
-        params.push(req.query.neighborhood_name.charAt(0).toUpperCase() 
-        + req.query.neighborhood_name.substr(1) + '%');
+        params.push(req.query.name.charAt(0).toUpperCase() 
+        + req.query.name.substr(1) + '%');
     };
 
     dbSelect(sql, params)
     .then((rows) => {
+        for (let i = 0; i < rows.length; i++) {
+            let originalElement = rows[i];
+            let jsonString = JSON.stringify(originalElement);
+            jsonString = jsonString.replace('"neighborhood_number"', '"id"');
+            jsonString = jsonString.replace('"neighborhood_name"', '"name"');
+    
+            rows[i] = JSON.parse(jsonString);
+        };
+
         res.status(200).type('json').send(rows);
     })
     .catch((error) => {
