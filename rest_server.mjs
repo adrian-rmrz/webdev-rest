@@ -60,20 +60,31 @@ function dbRun(query, params) {
 app.get('/codes', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
 
+    let sql = 'SELECT * FROM Codes';
+    let params = [];
+
     if (req.query.hasOwnProperty('incident_type')) {
-        sql += ' WHERE incident_type = ?';
-        params.push(req.query.mfr.toUpperCase());
-     }
+        sql += ' WHERE incident_type LIKE ?';
+        params.push(req.query.incident_type + "%");
+    };
 
     if (req.query.hasOwnProperty('code')) {
-        if (params.length === 0) {
-            sql += ' WHERE code = ?';
-        }
-        else {
-            sql += ' AND code = ?';
-        }
-        params.push(req.query.type.toUpperCase());
-    }
+        let arr = req.query.code.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE code IN (?'; 
+        } else {
+            sql += ' AND code IN (?'; 
+        };
+        params.push(parseInt(arr[0]));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(parseInt(arr[i]));
+        };
+
+        sql += ')'; 
+    };
 
     dbSelect(sql, params)
     .then((rows) => {
@@ -88,7 +99,42 @@ app.get('/codes', (req, res) => {
 app.get('/neighborhoods', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let sql = 'SELECT * FROM Neighborhoods';
+    let params = [];
+
+    if (req.query.hasOwnProperty('neighborhood_number')) {
+        let arr = req.query.neighborhood_number.split(",");
+
+        sql += ' WHERE neighborhood_number IN (?';
+        params.push(parseInt(arr[0]));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(parseInt(arr[i]));
+        };
+
+        sql += ')'; 
+    };
+
+    if (req.query.hasOwnProperty('neighborhood_name')) {
+        if (params.length === 0) {
+            sql += ' WHERE neighborhood_name LIKE ?';
+            
+        }
+        else {
+            sql += ' AND neighborhood_name LIKE ?';
+        }
+        params.push(req.query.neighborhood_name.charAt(0).toUpperCase() 
+        + req.query.neighborhood_name.substr(1) + '%');
+    };
+
+    dbSelect(sql, params)
+    .then((rows) => {
+        res.status(200).type('json').send(rows);
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
 });
 
 // GET request handler for crime incidents
