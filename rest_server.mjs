@@ -156,7 +156,7 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    let sql = 'SELECT * FROM Incidents';
+    let sql = 'SELECT * FROM Incidents ORDER BY date_time';
     let params = [];
 
     // add to 'sql' and 'params' based on 'req.query'

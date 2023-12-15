@@ -72,6 +72,11 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
+        console.log(response.toString);
+    }).catch((error) => {
+        console.log(error.message);
+    });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -99,16 +104,28 @@ function closeDialog() {
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
     <div class="grid-container ">
+        <div class="grid-x grid-padding-x align-justify">
+            <div class="grid-x">
+                <p class="space-left">Longitude: </p>
+                <input id="longitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
+                <p class="space-left">Latitude:</p>
+                <input id="latitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
+            </div>
+            <button class="button coord-button" type="button">Go</button>
+        </div>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+        <table id="crime-list">
+
+        </table>
     </div>
 </template>
 
 <style>
 #rest-dialog {
     width: 20rem;
-    margin-top: 1rem;
+    margin-top: 10rem;
     z-index: 1000;
 }
 
@@ -133,5 +150,17 @@ function closeDialog() {
 .dialog-error {
     font-size: 1rem;
     color: #D32323;
+}
+
+.coord-input {
+    width: 20rem;
+}
+
+.coord-button {
+    width: 7.5rem;
+}
+
+.space-left {
+    margin-left: 1rem;
 }
 </style>
