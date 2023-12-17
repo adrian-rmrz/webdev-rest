@@ -3,6 +3,10 @@ import { reactive, ref, onMounted } from 'vue'
 
 let crime_url = ref('');
 let crime_data = ref([]);
+let crime_code = ref([]);
+let table_headings = ref([]);
+let crime_neighborhood = ref([]);
+let refresh = ref(0);
 let dialog_err = ref(false);
 let map = reactive(
     {
@@ -76,9 +80,14 @@ function initializeCrimes() {
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((data) => {
+        table_headings = Object.keys(data[0]);
         crime_data = data;
+        
+        refresh.value += 1;
         console.log(crime_data);
-        let heading = document.getElementById('crime-list');
+        //crime_code = fetch(crime_url.value + '/codes?').json();
+        //crime_neighborhood = fetch(crime_url.value + '/neighborhoods?').json();
+
         
         // crime_data.neighborhood_number.forEach((res) => {
         //let heading = document.getElementById('crime_list');
@@ -125,21 +134,16 @@ function closeDialog() {
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
-        <table id="crime-list">
+        <table id="crime-list" :key="refresh">
             <tr> 
-                <th> case_number </th>
-                <th> date </th>
-                <th> time </th>
-                <th> incident_type </th>
-                <th> police_grid </th>
-                <th> neighborhood_name </th>
-                <th> block </th>
+                <th v-for="head in table_headings"> {{ head }} </th>
             </tr>
-            <tr v-for="(incident) in crime_data"> 
+            <tr v-for="incident in crime_data"> 
                 <td> {{ incident.case_number }} </td>
                 <td> {{ incident.date }} </td>
                 <td> {{ incident.time }} </td>
                 <td> {{ incident.code }} </td>
+                <td> {{ incident.incident }} </td>
                 <td> {{ incident.police_grid }} </td>
                 <td> {{ incident.neighborhood_number }} </td>
                 <td> {{ incident.block }} </td>
