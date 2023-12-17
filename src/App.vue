@@ -226,8 +226,9 @@ function closeDialog() {
 }
 
 table, th, td {
-  border: 1px solid black;
-  text-align: center;
+    margin-top: 1rem;
+    border: 1.5px solid black;
+    text-align: center;
 }
 
 </style>
