@@ -76,22 +76,54 @@ onMounted(() => {
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
+    fetch(crime_url.value + '/codes?').then((res) => {
+            return res.json()
+        }).then((code) => {
+            crime_code = code;
+        }).catch((error) => {
+            console.log(error.message);
+        });
+
+    fetch(crime_url.value + '/neighborhoods?').then((res) => {
+            return res.json()
+        }).then((hood) => {
+            crime_neighborhood = hood;
+        }).catch((error) => {
+            console.log(error.message);
+        });
+
     //       get initial 1000 crimes
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((data) => {
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < crime_code.length; j++) {
+                if (data[i].code == crime_code[j].code)
+                {
+                    data[i].code = crime_code[j].type;
+                }
+            delete data[i].incident
+        }}
+
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < crime_neighborhood.length; j++) {
+                if (data[i].neighborhood_number == crime_neighborhood[j].id)
+                {
+                    data[i].neighborhood_number = crime_neighborhood[j].name;
+                }
+        }}
+    
+        let jsonString = JSON.stringify(data);
+        jsonString = jsonString.replace("code", "incident_type");
+        jsonString = jsonString.replace("neighborhood_number", "neighborhood_name");
+        data = JSON.parse(jsonString);
+
         table_headings = Object.keys(data[0]);
         crime_data = data;
         
         refresh.value += 1;
         console.log(crime_data);
-        //crime_code = fetch(crime_url.value + '/codes?').json();
-        //crime_neighborhood = fetch(crime_url.value + '/neighborhoods?').json();
-
         
-        // crime_data.neighborhood_number.forEach((res) => {
-        //let heading = document.getElementById('crime_list');
-        //});
     }).catch((error) => {
         console.log(error.message);
     });
@@ -143,7 +175,6 @@ function closeDialog() {
                 <td> {{ incident.date }} </td>
                 <td> {{ incident.time }} </td>
                 <td> {{ incident.code }} </td>
-                <td> {{ incident.incident }} </td>
                 <td> {{ incident.police_grid }} </td>
                 <td> {{ incident.neighborhood_number }} </td>
                 <td> {{ incident.block }} </td>
