@@ -72,8 +72,8 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
-        console.log(response.toString);
+    fetch(crime_url.value + 'incidents?limit=1000').then((response) => {
+        console.log(response);
     }).catch((error) => {
         console.log(error.message);
     });
@@ -104,12 +104,12 @@ function closeDialog() {
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
     <div class="grid-container ">
-        <div class="grid-x grid-padding-x align-justify">
+        <div class="grid-x grid-padding-x align-justify coord-bar">
             <div class="grid-x">
                 <p class="space-left">Longitude: </p>
-                <input id="longitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
+                <input id="longitude" class="coord-input space-left" type="text"/>
                 <p class="space-left">Latitude:</p>
-                <input id="latitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
+                <input id="latitude" class="coord-input space-left" type="text"/>
             </div>
             <button class="button coord-button" type="button">Go</button>
         </div>
@@ -158,6 +158,14 @@ function closeDialog() {
 
 .coord-button {
     width: 7.5rem;
+}
+
+.coord-bar {
+    margin-top: 1rem;
+}
+
+.coord-bar p {
+    padding-top: 8px;
 }
 
 .space-left {
