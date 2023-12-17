@@ -3,6 +3,7 @@ import * as url from 'node:url';
 
 import { default as express } from 'express';
 import { default as sqlite3 } from 'sqlite3';
+import { default as cors } from 'cors';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
@@ -11,6 +12,7 @@ const port = 8000;
 
 let app = express();
 app.use(express.json());
+app.use(cors());
 
 /********************************************************************
  ***   DATABASE FUNCTIONS                                         *** 
@@ -156,7 +158,7 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    let sql = 'SELECT * FROM Incidents ORDER BY date_time';
+    let sql = 'SELECT * FROM Incidents ORDER BY date_time desc';
     let params = [];
 
     // add to 'sql' and 'params' based on 'req.query'
