@@ -116,21 +116,26 @@ function initializeCrimes() {
                 }
         }};
         
-        //add markers to neighborhoods
-        // for (let j = 0; j < crime_neighborhood.length; j++) {
-        //     let loc = crime_neighborhood[j].name + ', st. paul, minnesota';
-        //     let req = fetch('https://nominatim.openstreetmap.org/search?q='+ loc +'&format=json&limit=1');
-        //     Promise.all([req])
-        //     .then((response) => {
-        //     return Promise.all([response[0].json()]);
-        //     }).then((data) => {
+        // function task(j) { 
+        //     setTimeout(function() { 
+        //         let loc = crime_neighborhood[j].name + ', st. paul, minnesota';
+        //         let req = fetch('https://nominatim.openstreetmap.org/search?q='+ loc +'&format=json&limit=1');
+        //         Promise.all([req])
+        //         .then((response) => {
+        //         return Promise.all([response[0].json()]);
+        //         }).then((data) => {
         //         console.log(data);
         //         let lat = parseFloat(data[0][0].lat);
         //         let lon = parseFloat(data[0][0].lon);
         //         L.marker([lat, lon]).addTo(map);
-        //     }).catch((error) => { 
+        //         }).catch((error) => { 
         //         console.log(error.message)}
-        //     )};
+        //     )}, 2000 * j);
+        // } 
+        // //add markers to neighborhoods
+        // for (let j = 0; j < crime_neighborhood.length; j++) {
+        //     task(j);
+        //     };
 
         let jsonString = JSON.stringify(data);
         jsonString = jsonString.replaceAll("code", "incident_type");
