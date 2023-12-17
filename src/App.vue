@@ -2,7 +2,7 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_url = ref('');
-let crime_data = ref([]);
+let crime_table = ref([]);
 let crime_code = ref([]);
 let table_headings = ref([]);
 let crime_neighborhood = ref([]);
@@ -96,22 +96,24 @@ function initializeCrimes() {
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((data) => {
+        //loop to replace code with type
         for (let i = 0; i < data.length; i++) {
             for (let j = 0; j < crime_code.length; j++) {
                 if (data[i].code == crime_code[j].code)
                 {
                     data[i].code = crime_code[j].type;
                 }
-            delete data[i].incident;
+            delete data[i].incident; //remove redundant incident column
         }}
 
+        //loop to replace number with name
         for (let i = 0; i < data.length; i++) {
             for (let j = 0; j < crime_neighborhood.length; j++) {
                 if (data[i].neighborhood_number == crime_neighborhood[j].id)
                 {
                     data[i].neighborhood_number = crime_neighborhood[j].name;
                 }
-        }}
+        }};
     
         let jsonString = JSON.stringify(data);
         jsonString = jsonString.replaceAll("code", "incident_type");
@@ -119,9 +121,9 @@ function initializeCrimes() {
         data = JSON.parse(jsonString);
 
         table_headings = Object.keys(data[0]);
-        crime_data = data;
+        crime_table = data;
         
-        console.log(crime_data);
+        console.log(crime_table);
         refresh.value += 1;
     }).catch((error) => {
         console.log(error.message);
@@ -169,7 +171,7 @@ function closeDialog() {
             <tr> 
                 <th v-for="head in table_headings"> {{ head }} </th>
             </tr>
-            <tr v-for="incident in crime_data"> 
+            <tr v-for="incident in crime_table"> 
                 <td> {{ incident.case_number }} </td>
                 <td> {{ incident.date }} </td>
                 <td> {{ incident.time }} </td>
