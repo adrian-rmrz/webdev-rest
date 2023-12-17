@@ -72,7 +72,7 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value + 'incidents?limit=1000').then((response) => {
+    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         console.log(response);
     }).catch((error) => {
         console.log(error.message);
@@ -92,6 +92,27 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+
+// Function called when user presses 'Go' button
+function goCoord() {
+    let latitude_el = document.getElementById('latitude');
+    let longitude_el = document.getElementById('longitude');
+
+    // Clamp the latitude and longitude
+    if (latitude_el.value > 45.008206) {
+        latitude.value = 45.008206;
+    } else if (latitude.value < 44.883658) {
+        latitude.value = 44.883658;
+    }
+
+    if ( longitude_el.value < -93.217977 ) {
+        longitude_el.value = -93.217977;
+    } else if ( longitude_el.value > -92.993787 ) {
+        longitude_el.value = -92.993787;
+    }
+
+    map.leaflet.setView([latitude_el.value, longitude_el.value]);
+}
 </script>
 
 <template>
@@ -106,12 +127,12 @@ function closeDialog() {
     <div class="grid-container ">
         <div class="grid-x grid-padding-x align-justify coord-bar">
             <div class="grid-x">
-                <p class="space-left">Longitude: </p>
-                <input id="longitude" class="coord-input space-left" type="text"/>
                 <p class="space-left">Latitude:</p>
                 <input id="latitude" class="coord-input space-left" type="text"/>
+                <p class="space-left">Longitude: </p>
+                <input id="longitude" class="coord-input space-left" type="text"/>
             </div>
-            <button class="button coord-button" type="button">Go</button>
+            <button class="button coord-button" type="button" @click="goCoord">Go</button>
         </div>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
