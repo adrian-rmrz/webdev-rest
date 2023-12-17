@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_url = ref('');
+let crime_data = ref([]);
 let dialog_err = ref(false);
 let map = reactive(
     {
@@ -73,7 +74,15 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
-        console.log(response.toString);
+        return response.json();
+    }).then((data) => {
+        crime_data = data;
+        console.log(crime_data);
+        let heading = document.getElementById('crime-list');
+        
+        // crime_data.neighborhood_number.forEach((res) => {
+        //let heading = document.getElementById('crime_list');
+        //});
     }).catch((error) => {
         console.log(error.message);
     });
@@ -117,7 +126,24 @@ function closeDialog() {
             <div id="leafletmap" class="cell auto"></div>
         </div>
         <table id="crime-list">
-
+            <tr> 
+                <th> case_number </th>
+                <th> date </th>
+                <th> time </th>
+                <th> incident_type </th>
+                <th> police_grid </th>
+                <th> neighborhood_name </th>
+                <th> block </th>
+            </tr>
+            <tr v-for="(incident) in crime_data"> 
+                <td> {{ incident.case_number }} </td>
+                <td> {{ incident.date }} </td>
+                <td> {{ incident.time }} </td>
+                <td> {{ incident.code }} </td>
+                <td> {{ incident.police_grid }} </td>
+                <td> {{ incident.neighborhood_number }} </td>
+                <td> {{ incident.block }} </td>
+            </tr>
         </table>
     </div>
 </template>
