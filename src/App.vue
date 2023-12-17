@@ -102,7 +102,7 @@ function initializeCrimes() {
                 {
                     data[i].code = crime_code[j].type;
                 }
-            delete data[i].incident
+            delete data[i].incident;
         }}
 
         for (let i = 0; i < data.length; i++) {
@@ -224,4 +224,10 @@ function closeDialog() {
 .space-left {
     margin-left: 1rem;
 }
+
+table, th, td {
+  border: 1px solid black;
+  text-align: center;
+}
+
 </style>
