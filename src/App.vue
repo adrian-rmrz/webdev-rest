@@ -114,16 +114,15 @@ function initializeCrimes() {
         }}
     
         let jsonString = JSON.stringify(data);
-        jsonString = jsonString.replace("code", "incident_type");
-        jsonString = jsonString.replace("neighborhood_number", "neighborhood_name");
+        jsonString = jsonString.replaceAll("code", "incident_type");
+        jsonString = jsonString.replaceAll("neighborhood_number", "neighborhood_name");
         data = JSON.parse(jsonString);
 
         table_headings = Object.keys(data[0]);
         crime_data = data;
         
-        refresh.value += 1;
         console.log(crime_data);
-        
+        refresh.value += 1;
     }).catch((error) => {
         console.log(error.message);
     });
@@ -174,9 +173,9 @@ function closeDialog() {
                 <td> {{ incident.case_number }} </td>
                 <td> {{ incident.date }} </td>
                 <td> {{ incident.time }} </td>
-                <td> {{ incident.code }} </td>
+                <td> {{ incident.incident_type }} </td>
                 <td> {{ incident.police_grid }} </td>
-                <td> {{ incident.neighborhood_number }} </td>
+                <td> {{ incident.neighborhood_name }} </td>
                 <td> {{ incident.block }} </td>
             </tr>
         </table>
