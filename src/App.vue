@@ -96,6 +96,7 @@ function initializeCrimes() {
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((data) => {
+        
         //loop to replace code with type
         for (let i = 0; i < data.length; i++) {
             for (let j = 0; j < crime_code.length; j++) {
@@ -114,7 +115,23 @@ function initializeCrimes() {
                     data[i].neighborhood_number = crime_neighborhood[j].name;
                 }
         }};
-    
+        
+        //add markers to neighborhoods
+        // for (let j = 0; j < crime_neighborhood.length; j++) {
+        //     let loc = crime_neighborhood[j].name + ', st. paul, minnesota';
+        //     let req = fetch('https://nominatim.openstreetmap.org/search?q='+ loc +'&format=json&limit=1');
+        //     Promise.all([req])
+        //     .then((response) => {
+        //     return Promise.all([response[0].json()]);
+        //     }).then((data) => {
+        //         console.log(data);
+        //         let lat = parseFloat(data[0][0].lat);
+        //         let lon = parseFloat(data[0][0].lon);
+        //         L.marker([lat, lon]).addTo(map);
+        //     }).catch((error) => { 
+        //         console.log(error.message)}
+        //     )};
+
         let jsonString = JSON.stringify(data);
         jsonString = jsonString.replaceAll("code", "incident_type");
         jsonString = jsonString.replaceAll("neighborhood_number", "neighborhood_name");
