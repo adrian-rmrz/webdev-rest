@@ -211,9 +211,9 @@ function createIncident() {
                     <strong>incident_type</strong><br>
                     <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
                         <label for="Burglary">Burglary</label> 
-                    <input checked="true" type="checkbox" id="Rape" value="Rape" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Rape" value="210,220" @change="tableRefresh"/>
                         <label for="Rape">Rape</label> 
-                    <input checked="true" type="checkbox" id="Robbery" value="Robbery" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Robbery" value="311," @change="tableRefresh"/>
                         <label for="Robbery">Robbery</label> <br>
                     <input checked="true" type="checkbox" id="Theft" value="Theft" @change="tableRefresh"/>
                         <label for="Theft">Theft</label> 
@@ -229,9 +229,9 @@ function createIncident() {
                         <label for="Assault">Assault</label>
                     <input checked="true" type="checkbox" id="Weapon" value="Weapon" @change="tableRefresh"/>
                         <label for="Weapon">Weapon</label>
-                    <input checked="true" type="checkbox" id="Homocide" value="Homocide" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Homocide" value="100" @change="tableRefresh"/>
                         <label for="Homocide">Homocide</label>
-                    <input checked="true" type="checkbox" id="Murder" value="Murder" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Murder" value="110,120" @change="tableRefresh"/>
                         <label for="Murder">Murder</label>
                 </div>
                 <div class="large-4">

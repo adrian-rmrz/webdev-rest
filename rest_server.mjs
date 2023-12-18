@@ -65,7 +65,7 @@ app.get('/codes', (req, res) => {
     let sql = 'SELECT * FROM Codes';
     let params = [];
 
-    if (req.query.hasOwnProperty('type')) {
+    if (req.query.hasOwnProperty('incident_type')) {
         sql += ' WHERE incident_type LIKE ?';
         params.push(req.query.incident_type + "%");
     };
