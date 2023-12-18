@@ -195,6 +195,7 @@ let formBlock = ref("");
 
 function createIncident() {
     //PUT request:
+    let dialog = document.getElementById('form-dialog');
     dialog.close();
 }
 
