@@ -231,7 +231,7 @@ app.get('/incidents', (req, res) => {
         sql += ')';
     };
 
-    sql += ' ORDER BY date_time'
+    sql += ' ORDER BY date_time desc'
 
     if (req.query.hasOwnProperty('limit')) {
         sql += ' LIMIT ?'; 
