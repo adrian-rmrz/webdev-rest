@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
+let coordChecked = ref(false);
 let crime_url = ref('');
 let dialog_err = ref(false);
 let map = reactive(
@@ -49,6 +50,54 @@ onMounted(() => {
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
 
+    // // Add values to input boxes
+    // document.getElementById('latitude').value
+    // document.getElementById('longitude').value
+    // document.getElementById('address').value
+
+    // Drag function
+    map.leaflet.on('dragend', () => {
+        let center = map.leaflet.getCenter()
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + center.lat + '&lon=' + center.lng + '&format=json&limit=1'
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        fetch(url).then((response) => {
+            return response.json();
+        }).then((data) => {
+            if (data.address.hasOwnProperty('house_number')) {
+                document.getElementById('address').value = data.address.house_number + ' ' + data.address.road;
+            } else {
+                document.getElementById('address').value = data.address.road;
+            }
+        })
+    });
+
+    // Zoom function
+    map.leaflet.on('zoomend', () => {
+        let center = map.leaflet.getCenter()
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + center.lat + '&lon=' + center.lng + '&format=json&limit=1'
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        fetch(url).then((response) => {
+            return response.json();
+        }).then((data) => {
+            if (data.address.hasOwnProperty('house_number')) {
+                document.getElementById('address').value = data.address.house_number + ' ' + data.address.road;
+            } else {
+                document.getElementById('address').value = data.address.road;
+            }
+        })
+    });
+
     // Get boundaries for St. Paul neighborhoods
     let district_boundary = new L.geoJson();
     district_boundary.addTo(map.leaflet);
@@ -73,10 +122,16 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
-        console.log(response);
+        return response.json();
+    }).then((result) => {
+        console.log('Result:', result);
+
+        // Neighborhood name and incident type
+        
     }).catch((error) => {
         console.log(error.message);
     });
+
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -95,23 +150,64 @@ function closeDialog() {
 
 // Function called when user presses 'Go' button
 function goCoord() {
-    let latitude_el = document.getElementById('latitude');
+    let longitude = 0;
+    let latitude = 0;
+
     let longitude_el = document.getElementById('longitude');
+    let latitude_el = document.getElementById('latitude');
+    let address_el = document.getElementById('address');
 
+    // If coordChecked is true, grab the coordinates
+    // Else, grab the address
+    if (coordChecked.value) {
+        latitude = latitude_el.value;
+        longitude = longitude_el.value;
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + latitude + '&lon=' + longitude + '&format=json&limit=1'
+
+        fetch(url).then( (response) => {
+            return response.json();
+        }).then( (data) => {
+            address_el.value = data.address.road;
+
+            clampView(latitude, longitude);
+        }).catch( (error) => {
+            console.error(error);
+        });
+    } else {
+        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + '' + '&format=json&limit=1';
+        
+        fetch(url).then( (response) => {
+            return response.json();
+        }).then( (data) => {
+            longitude = data[0].lon;
+            latitude = data[0].lat;
+
+            longitude_el.value = longitude;
+            latitude_el.value = latitude;
+
+            clampView(latitude, longitude);
+        }).catch( (error) => {
+            console.error(error);
+        });
+    }
+}
+
+function clampView(latitude, longitude) {
     // Clamp the latitude and longitude
-    if (latitude_el.value > 45.008206) {
-        latitude.value = 45.008206;
-    } else if (latitude.value < 44.883658) {
-        latitude.value = 44.883658;
+    if (latitude > 45.008206) {
+        latitude = 45.008206;
+    } else if (latitude < 44.883658) {
+        latitude = 44.883658;
     }
 
-    if ( longitude_el.value < -93.217977 ) {
-        longitude_el.value = -93.217977;
-    } else if ( longitude_el.value > -92.993787 ) {
-        longitude_el.value = -92.993787;
+    if ( longitude < -93.217977 ) {
+        longitude = -93.217977;
+    } else if ( longitude > -92.993787 ) {
+        longitude = -92.993787;
     }
 
-    map.leaflet.setView([latitude_el.value, longitude_el.value]);
+    map.leaflet.setView([latitude, longitude], map.leaflet.getZoom());
 }
 </script>
 
@@ -127,10 +223,25 @@ function goCoord() {
     <div class="grid-container ">
         <div class="grid-x grid-padding-x align-justify coord-bar">
             <div class="grid-x">
-                <p class="space-left">Latitude:</p>
-                <input id="latitude" class="coord-input space-left" type="text"/>
-                <p class="space-left">Longitude: </p>
-                <input id="longitude" class="coord-input space-left" type="text"/>
+                <div id="lat-input" class="grid-x" v-show="coordChecked">
+                    <p class="space-left">Latitude:</p>
+                    <input id="latitude" class="coord-input space-left" type="text"/>
+                </div>
+                <div id="long-input" class="grid-x" v-show="coordChecked">
+                    <p class="space-left">Longitude: </p>
+                    <input id="longitude" class="coord-input space-left" type="text"/>
+                </div>
+                <div id="add-input" class="grid-x" v-show="!coordChecked">
+                    <p class="space-left">Address: </p>
+                    <input id="address" class="coord-input space-left" type="text"/>
+                </div>
+            </div>
+            <div class="grid-x">
+                <p>Lat/Long:</p>
+                <label class="switch space-left">
+                    <input type="checkbox" id="coord-check" v-model="coordChecked"/>
+                    <span class="slider"></span>
+                </label>
             </div>
             <button class="button coord-button" type="button" @click="goCoord">Go</button>
         </div>
@@ -138,7 +249,14 @@ function goCoord() {
             <div id="leafletmap" class="cell auto"></div>
         </div>
         <table id="crime-list">
-
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Case Number</th>
+                <th>Neighborhood Name</th>
+                <th>Incident Type</th>
+                <th>Police Grid</th>
+            </tr>
         </table>
     </div>
 </template>
@@ -191,5 +309,56 @@ function goCoord() {
 
 .space-left {
     margin-left: 1rem;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+}
+
+input:checked + .slider {
+  background-color: #1779ba;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #1779ba;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+#add-input {
+    margin-right: 26.5rem;
 }
 </style>
