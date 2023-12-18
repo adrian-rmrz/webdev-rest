@@ -166,24 +166,75 @@ function closeDialog() {
     }
 }
 
-//Refresh table based on the filter
+//Refresh table when user changed the filter
 function tableRefresh() {
     let url = crime_url.value + '/incidents?';
 }
 
 //Create and insert new incident
-function createIncident() {
+function openForm() {
+    if (crime_url.value !== "") {
+        let dialog = document.getElementById('form-dialog');
+        dialog.showModal();
+    }
 }
 
+function closeForm() {
+    let dialog = document.getElementById('form-dialog');
+    dialog.close();
+}
+
+let formCaseNum = ref("");
+let formDate = ref("");
+let formTime = ref("");
+let formCode = ref("");
+let formIncident = ref("");
+let formPoGrid = ref("");
+let formNeiNum = ref("");
+let formBlock = ref("");
+
+function createIncident() {
+    //PUT request:
+    dialog.close();
+}
 
 </script>
 
 <template>
     
     <div class="grid-x grid-padding-x">
-            <button type="button" class="cell large-auto button" @click="" style="background-color: green;">New Incident Form</button>
+            <button type="button" class="cell large-auto button" @click="openForm" style="background-color: green;">New Incident Form</button>
             <button type="button" class="cell large-auto button" @click="" style="background-color: rebeccapurple;">About</button>
     </div>
+    <dialog id="form-dialog">
+        <h1 class="dialog-header">Form</h1>
+        <label class="dialog-label">case_number</label>
+        <input id="formCaseNum" class="dialog-input" type="text" v-model="formCaseNum" placeholder="########" />
+        <br/>
+        <label class="dialog-label">Date</label>
+        <input id="formDate" class="dialog-input" type="text" v-model="formDate" placeholder="YY-MM-DD" />
+        <br/>
+        <label class="dialog-label">Time</label>
+        <input id="formTime" class="dialog-input" type="text" v-model="formTime" placeholder="##:##:##" />
+        <br/>
+        <label class="dialog-label">Code</label>
+        <input id="formCode" class="dialog-input" type="text" v-model="formCode" placeholder="#"/>
+        <br/>
+        <label class="dialog-label">Incident</label>
+        <input id="formIncident" class="dialog-input" type="text" v-model="formIncident" placeholder="" />
+        <br/>
+        <label class="dialog-label">police_grid</label>
+        <input id="formPoGrid" class="dialog-input" type="text" v-model="formPoGrid" placeholder="" />
+        <br/>
+        <label class="dialog-label">neighborhood_number</label>
+        <input id="formNeiNum" class="dialog-input" type="text" v-model="formNeiNum" placeholder="" />
+        <br/>
+        <label class="dialog-label">block</label>
+        <input id="formBlock" class="dialog-input" type="text" v-model="formBlock" placeholder="" />
+        <br/>
+        <button class="button" id="create" type="button" @click="createIncident">Create</button>
+        <button class="button" id="closebutton" type="button" @click="closeForm">Cancel</button>
+    </dialog>
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">URL: </label>
@@ -209,25 +260,25 @@ function createIncident() {
             <div class="grid-x grid-padding-x">
                 <div class="large-4">
                     <strong>incident_type</strong><br>
-                    <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Burglary" value="500,510,511,513,515,516,520,521,523,525,526,530,531,533,535,536,540,541,543,545,546,550,551,553,555,556,560,561,563,565,566" @change="tableRefresh"/>
                         <label for="Burglary">Burglary</label> 
                     <input checked="true" type="checkbox" id="Rape" value="210,220" @change="tableRefresh"/>
                         <label for="Rape">Rape</label> 
-                    <input checked="true" type="checkbox" id="Robbery" value="311," @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Robbery" value="300,311,312,313,314,321,322,323,324,331,332,333,334,341,342,343,344,351,352,353,354,361,363,364,371,372,373,374" @change="tableRefresh"/>
                         <label for="Robbery">Robbery</label> <br>
-                    <input checked="true" type="checkbox" id="Theft" value="Theft" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Theft" value="600,601,611,612,613,614,621,622,623,630,631,632,633,640,641,642,643,651,652,653,661,662,663,671,672,673,681,682,683,691,692,693" @change="tableRefresh"/>
                         <label for="Theft">Theft</label> 
-                    <input checked="true" type="checkbox" id="Motor Vehicle Theft" value="Motor Vehicle Theft" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Motor Vehicle Theft" value="700,710,711,712,720,721,722,730,731,732" @change="tableRefresh"/>
                         <label for="Motor Vehicle Theft">Motor Vehicle Theft</label> 
-                    <input checked="true" type="checkbox" id="Narcotics" value="Narcotics" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Narcotics" value="1800,1810,1811,1812,1813,1814,1815,1820,1822,1823,1824,1825,1830,1835,1840,1841,1842,1843,1844,1845,1850,1855,1860,1865,1870,1880,1885" @change="tableRefresh"/>
                         <label for="Narcotics">Narcotics</label> <br>
                     <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
                         <label for="Proactive Police Visit">Proactive Police Visit</label>
                     <input checked="true" type="checkbox" id="Criminal Damage to Property" value="Criminal Damage to Property" @change="tableRefresh"/>
                         <label for="Criminal Damage to Property">Criminal Damage to Property</label>
-                    <input checked="true" type="checkbox" id="Assault" value="Assault" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Assault" value="400,410,411,412,420,421,422,430,431,432,440,441,442,450,451,452,453,810,861,862,863" @change="tableRefresh"/>
                         <label for="Assault">Assault</label>
-                    <input checked="true" type="checkbox" id="Weapon" value="Weapon" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Weapon" value="2619" @change="tableRefresh"/>
                         <label for="Weapon">Weapon</label>
                     <input checked="true" type="checkbox" id="Homocide" value="100" @change="tableRefresh"/>
                         <label for="Homocide">Homocide</label>
@@ -351,6 +402,10 @@ function createIncident() {
 
 .space-left {
     margin-left: 1rem;
+}
+
+#closebutton {
+    float:right;
 }
 
 table, th, td {

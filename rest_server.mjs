@@ -65,7 +65,7 @@ app.get('/codes', (req, res) => {
     let sql = 'SELECT * FROM Codes';
     let params = [];
 
-    if (req.query.hasOwnProperty('incident_type')) {
+    if (req.query.hasOwnProperty('type')) {
         sql += ' WHERE incident_type LIKE ?';
         params.push(req.query.incident_type + "%");
     };
@@ -127,7 +127,7 @@ app.get('/neighborhoods', (req, res) => {
     };
 
     if (req.query.hasOwnProperty('name')) {
-        if (params.length === 0) {
+        if (params.length == 0) {
             sql += ' WHERE neighborhood_name LIKE ?';
         }
         else {
