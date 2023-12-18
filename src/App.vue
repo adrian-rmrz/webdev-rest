@@ -165,13 +165,25 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+
+//Refresh table based on the filter
 function tableRefresh() {
     let url = crime_url.value + '/incidents?';
-    
 }
+
+//Create and insert new incident
+function createIncident() {
+}
+
+
 </script>
 
 <template>
+    
+    <div class="grid-x grid-padding-x">
+            <button type="button" class="cell large-auto button" @click="" style="background-color: green;">New Incident Form</button>
+            <button type="button" class="cell large-auto button" @click="" style="background-color: rebeccapurple;">About</button>
+    </div>
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">URL: </label>
@@ -189,6 +201,9 @@ function tableRefresh() {
                 <input id="latitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
             </div>
             <button class="button coord-button" type="button">Go</button>
+        </div>
+        <div class="grid-x grid-padding-x">
+            <div id="leafletmap" class="cell auto"></div>
         </div>
         <div class="grid-container">
             <div class="grid-x grid-padding-x">
@@ -254,19 +269,20 @@ function tableRefresh() {
                     <input checked="true" type="checkbox" id="Capitol River" value=16 @change="tableRefresh"/>
                         <label for="Capitol River">Capitol River</label>
                 </div>
-                <div class="large-3">
+                <div class="large-2">
                     <strong>date_range</strong><br>
-                    <select name="start_date">
-                        <option value=""></option>
+                    <select name="start_date" @change="tableRefresh">
+                        <option value="" disabled selected> Start</option>
                     </select> 
                     <select name="end_date">
-                        <option value=""></option>
+                        <option value="" disabled selected>End</option>
                     </select>       
                     
                 </div>
-                <div class="large-1">
+                <div class="large-2">
                     <strong>max incidents</strong><br>
-                    <select name="max_incidents">
+                    <select name="max_incidents" @change="tableRefresh">
+                        <option value="" disabled selected>Select</option>
                         <option value="10">10</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -276,9 +292,6 @@ function tableRefresh() {
                     </select>  
                 </div>
             </div>
-        </div>
-        <div class="grid-x grid-padding-x">
-            <div id="leafletmap" class="cell auto"></div>
         </div>
         <table id="crime-list" :key="refresh">
             <tr> 
@@ -306,6 +319,7 @@ function tableRefresh() {
 
 #leafletmap {
     height: 500px;
+    margin-bottom: 1rem;
 }
 
 .dialog-header {
