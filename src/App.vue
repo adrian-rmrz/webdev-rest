@@ -166,7 +166,8 @@ function closeDialog() {
     }
 }
 function tableRefresh() {
-
+    let url = crime_url.value + '/incidents?';
+    
 }
 </script>
 
@@ -189,15 +190,93 @@ function tableRefresh() {
             </div>
             <button class="button coord-button" type="button">Go</button>
         </div>
-        <!-- <div>
-                <ul class="filterSection">
-                <li>
-                    <strong>Incident_type</strong>
-                    <input checked="true" type="checkbox" id="homocide" value="Homocide"/> <br>
-                    <label for="homocide">Homocide</label>
-                </li>
-                </ul>
-        </div> -->
+        <div class="grid-container">
+            <div class="grid-x grid-padding-x">
+                <div class="large-4">
+                    <strong>incident_type</strong><br>
+                    <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
+                        <label for="Burglary">Burglary</label> 
+                    <input checked="true" type="checkbox" id="Rape" value="Rape" @change="tableRefresh"/>
+                        <label for="Rape">Rape</label> 
+                    <input checked="true" type="checkbox" id="Robbery" value="Robbery" @change="tableRefresh"/>
+                        <label for="Robbery">Robbery</label> <br>
+                    <input checked="true" type="checkbox" id="Theft" value="Theft" @change="tableRefresh"/>
+                        <label for="Theft">Theft</label> 
+                    <input checked="true" type="checkbox" id="Motor Vehicle Theft" value="Motor Vehicle Theft" @change="tableRefresh"/>
+                        <label for="Motor Vehicle Theft">Motor Vehicle Theft</label> 
+                    <input checked="true" type="checkbox" id="Narcotics" value="Narcotics" @change="tableRefresh"/>
+                        <label for="Narcotics">Narcotics</label> <br>
+                    <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
+                        <label for="Proactive Police Visit">Proactive Police Visit</label>
+                    <input checked="true" type="checkbox" id="Criminal Damage to Property" value="Criminal Damage to Property" @change="tableRefresh"/>
+                        <label for="Criminal Damage to Property">Criminal Damage to Property</label>
+                    <input checked="true" type="checkbox" id="Assault" value="Assault" @change="tableRefresh"/>
+                        <label for="Assault">Assault</label>
+                    <input checked="true" type="checkbox" id="Weapon" value="Weapon" @change="tableRefresh"/>
+                        <label for="Weapon">Weapon</label>
+                    <input checked="true" type="checkbox" id="Homocide" value="Homocide" @change="tableRefresh"/>
+                        <label for="Homocide">Homocide</label>
+                    <input checked="true" type="checkbox" id="Murder" value="Murder" @change="tableRefresh"/>
+                        <label for="Murder">Murder</label>
+                </div>
+                <div class="large-4">
+                    <strong>neighborhood_name</strong><br>
+                    <input checked="true" type="checkbox" id="Conway/Battlecreek/Highwood" value=1 @change="tableRefresh"/>
+                        <label for="Conway/Battlecreek/Highwood">Conway/Battlecreek/Highwood</label> 
+                    <input checked="true" type="checkbox" id="Greater East Side" value=2 @change="tableRefresh"/>
+                        <label for="Greater East Side">Greater East Side</label> <br>
+                    <input checked="true" type="checkbox" id="West Side" value=3 @change="tableRefresh"/>
+                        <label for="West Side">West Side</label>
+                    <input checked="true" type="checkbox" id="Dayton's Bluff" value=4 @change="tableRefresh"/>
+                        <label for="Dayton's Bluff">Dayton's Bluff</label> 
+                    <input checked="true" type="checkbox" id="Payne/Phalen" value=5 @change="tableRefresh"/>
+                        <label for="Payne/Phalen">Payne/Phalen</label> <br> 
+                    <input checked="true" type="checkbox" id="North End" value=6 @change="tableRefresh"/>
+                        <label for="North End">North End</label>
+                    <input checked="true" type="checkbox" id="Thomas/Dale(Frogtown)" value=7 @change="tableRefresh"/>
+                        <label for="Thomas/Dale(Frogtown)">Thomas/Dale(Frogtown)</label> <br>
+                    <input checked="true" type="checkbox" id="Summit/University" value=8 @change="tableRefresh"/>
+                        <label for="Summit/University">Summit/University</label>
+                    <input checked="true" type="checkbox" id="West Seventh" value=9 @change="tableRefresh"/>
+                        <label for="West Seventh">West Seventh</label>
+                    <input checked="true" type="checkbox" id="Como" value=10 @change="tableRefresh"/>
+                        <label for="Como">Como</label> <br>
+                    <input checked="true" type="checkbox" id="Hamline/Midway" value=11 @change="tableRefresh"/>
+                        <label for="Hamline/Midway">Hamline/Midway</label>
+                    <input checked="true" type="checkbox" id="St. Anthony" value=12 @change="tableRefresh"/>
+                        <label for="St. Anthony">St. Anthony</label>
+                    <input checked="true" type="checkbox" id="Union Park" value=13 @change="tableRefresh"/>
+                        <label for="Union Park">Union Park</label> <br>
+                    <input checked="true" type="checkbox" id="Macalester-Groveland" value=14 @change="tableRefresh"/>
+                        <label for="Macalester-Groveland">Macalester-Groveland</label>
+                    <input checked="true" type="checkbox" id="Highland" value=15 @change="tableRefresh"/>
+                        <label for="Highland">Highland</label>
+                    <input checked="true" type="checkbox" id="Capitol River" value=16 @change="tableRefresh"/>
+                        <label for="Capitol River">Capitol River</label>
+                </div>
+                <div class="large-3">
+                    <strong>date_range</strong><br>
+                    <select name="start_date">
+                        <option value=""></option>
+                    </select> 
+                    <select name="end_date">
+                        <option value=""></option>
+                    </select>       
+                    
+                </div>
+                <div class="large-1">
+                    <strong>max incidents</strong><br>
+                    <select name="max_incidents">
+                        <option value="10">10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                    </select>  
+                </div>
+            </div>
+        </div>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
