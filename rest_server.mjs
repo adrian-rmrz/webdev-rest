@@ -127,7 +127,7 @@ app.get('/neighborhoods', (req, res) => {
     };
 
     if (req.query.hasOwnProperty('name')) {
-        if (params.length == 0) {
+        if (params.length === 0) {
             sql += ' WHERE neighborhood_name LIKE ?';
         }
         else {
@@ -158,7 +158,7 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    let sql = 'SELECT * FROM Incidents ORDER BY date_time desc';
+    let sql = 'SELECT * FROM Incidents';
     let params = [];
 
     // add to 'sql' and 'params' based on 'req.query'
@@ -230,6 +230,8 @@ app.get('/incidents', (req, res) => {
 
         sql += ')';
     };
+
+    sql += ' ORDER BY date_time'
 
     if (req.query.hasOwnProperty('limit')) {
         sql += ' LIMIT ?'; 
