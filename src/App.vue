@@ -165,6 +165,9 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+function tableRefresh() {
+
+}
 </script>
 
 <template>
@@ -185,6 +188,15 @@ function closeDialog() {
                 <input id="latitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
             </div>
             <button class="button coord-button" type="button">Go</button>
+        </div>
+            <!-- <div>
+                <ul class="filterSection">
+                <li>
+                    <strong>Incident_type</strong>
+                    <input checked="true" type="checkbox" id="homocide" value="Homocide"/> <br>
+                    <label for="homocide">Homocide</label>
+                </li>
+                </ul> -->
         </div>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
