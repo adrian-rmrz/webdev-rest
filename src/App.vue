@@ -189,15 +189,15 @@ function tableRefresh() {
             </div>
             <button class="button coord-button" type="button">Go</button>
         </div>
-            <!-- <div>
+        <!-- <div>
                 <ul class="filterSection">
                 <li>
                     <strong>Incident_type</strong>
                     <input checked="true" type="checkbox" id="homocide" value="Homocide"/> <br>
                     <label for="homocide">Homocide</label>
                 </li>
-                </ul> -->
-        </div>
+                </ul>
+        </div> -->
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
