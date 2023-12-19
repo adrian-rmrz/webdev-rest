@@ -127,6 +127,8 @@ function initializeCrimes() {
         return response.json();
     }).then((result) => {
         neighborhood_name.value = result;
+
+        
     }).catch((error) => {
         console.log(error.message);
     });
@@ -138,6 +140,8 @@ function initializeCrimes() {
     }).catch((error) => {
         console.log(error.message);
     });
+
+
 }
 
 // Function to retrieve crimes that are within map view
