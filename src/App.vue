@@ -185,8 +185,7 @@ function closeForm() {
 }
 
 let formCaseNum = ref("");
-let formDate = ref("");
-let formTime = ref("");
+let formDateTime = ref("");
 let formCode = ref("");
 let formIncident = ref("");
 let formPoGrid = ref("");
@@ -196,6 +195,28 @@ let formBlock = ref("");
 function createIncident() {
     //PUT request:
     let dialog = document.getElementById('form-dialog');
+    let putURL = crime_url + "/new-incident";
+    let newData = {
+        case_number: formCaseNum,
+        data_time: formDateTime,
+        code: formCode,
+        incident: formIncident,
+        police_grid: formPoGrid,
+        neighborhood_number: formNeiNum,
+        block: formBlock,
+    };
+
+    fetch(putURL, {method: 'PUT',
+    body: JSON.stringify(newData)
+    }).then(response => {
+        console.log(response.status);
+        return response.json();
+    }).then(data => {
+        console.log('PUT request successful:', data);
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+
     dialog.close();
 }
 
@@ -212,11 +233,8 @@ function createIncident() {
         <label class="dialog-label">case_number</label>
         <input id="formCaseNum" class="dialog-input" type="text" v-model="formCaseNum" placeholder="########" />
         <br/>
-        <label class="dialog-label">Date</label>
-        <input id="formDate" class="dialog-input" type="text" v-model="formDate" placeholder="YY-MM-DD" />
-        <br/>
-        <label class="dialog-label">Time</label>
-        <input id="formTime" class="dialog-input" type="text" v-model="formTime" placeholder="##:##:##" />
+        <label class="dialog-label">Date_Time</label>
+        <input id="formDate" class="dialog-input" type="text" v-model="formDateTime" placeholder="YY-MM-DDT00:00:00" />
         <br/>
         <label class="dialog-label">Code</label>
         <input id="formCode" class="dialog-input" type="text" v-model="formCode" placeholder="#"/>
