@@ -208,8 +208,6 @@ app.get('/incidents', (req, res) => {
           }
 
         sql += ')'; 
-        console.log(sql);
-        console.log(params);
     };
 
     if (req.query.hasOwnProperty('code')) {

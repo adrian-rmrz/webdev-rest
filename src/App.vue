@@ -251,6 +251,9 @@ function tableRefresh() {
         url += (document.getElementById('Homicide').value + ",");
     }
 
+    url += ("&start_date=" + document.getElementById('start_date').value);
+    url += ("&end_date=" + document.getElementById('end_date').value);
+    
     url += ('&limit=' + document.getElementById('max_incidents').value);
 
     fetch(url).then((response) => {
@@ -456,11 +459,29 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>date_range</strong><br>
-                    <select name="start_date" @change="tableRefresh">
-                        <option value="" disabled selected> Start</option>
+                    <select id="start_date" @change="tableRefresh">
+                        <option selected="selected" value="2014-01-01" > 2014-01-01</option>
+                        <option value="2015-01-01" > 2015-01-01</option>
+                        <option value="2016-01-01" > 2016-01-01</option>
+                        <option value="2017-01-01" > 2017-01-01</option>
+                        <option value="2018-01-01" > 2018-01-01</option>
+                        <option value="2019-01-01" > 2019-01-01</option>
+                        <option value="2020-01-01" > 2020-01-01</option>
+                        <option value="2021-01-01" > 2021-01-01</option>
+                        <option value="2022-01-01" > 2022-01-01</option>
+                        <option value="2023-01-01" > 2023-01-01</option>
                     </select> 
-                    <select name="end_date">
-                        <option value="" disabled selected>End</option>
+                    <select id="end_date" @change="tableRefresh">
+                        <option value="2015-01-01" > 2015-01-01</option>
+                        <option value="2016-01-01" > 2016-01-01</option>
+                        <option value="2017-01-01" > 2017-01-01</option>
+                        <option value="2018-01-01" > 2018-01-01</option>
+                        <option value="2019-01-01" > 2019-01-01</option>
+                        <option value="2020-01-01" > 2020-01-01</option>
+                        <option value="2021-01-01" > 2021-01-01</option>
+                        <option value="2022-01-01" > 2022-01-01</option>
+                        <option value="2023-01-01" > 2023-01-01</option>
+                        <option selected="selected" value="2024-01-01" > 2024-01-01</option>
                     </select>       
                     
                 </div>
