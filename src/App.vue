@@ -148,7 +148,7 @@ function initializeCrimes() {
             map.neighborhood_markers[i].popupContent = 0;
         }
         
-        updateTable(result[1]);
+        crime_table.value = result[1];
         updateMarkerPopup(result[1]);
     }).catch((error) => {
         console.log(error.message);
@@ -175,7 +175,6 @@ function refreshCrimes(limit) {
         let longitude = neigh_marker.location[1];
 
         if (isBetween(latitude, min_lat, max_lat) && isBetween(longitude, min_lng, max_lng)) {
-            console.log("neigh_number: " + neigh_number);
             neigh_array.push(neigh_number);
         }
 
@@ -191,9 +190,7 @@ function refreshCrimes(limit) {
     fetch(url).then((response) => {
         return response.json();
     }).then((result) => {
-        console.log("URL: " + url);
-        console.log(result);
-        updateTable(result);
+        crime_table.value = result;
         updateMarkerPopup(result);
     }).catch((error) => {
         console.log(error.message);
@@ -220,21 +217,28 @@ function isBetween(value, min, max) {
     return value >= min && value <= max;
 }
 
-// Function to update the table with the new values
-function updateTable(data) {
-    incidentsInfo.value = '';
-    console.log(data);
-
-    for (let incident of data) {
-        // Replace incidentsInfo with new incidents
-        incidentsInfo.value += '<tr>'
-        incidentsInfo.value += '<td>' + incident.date + '</td>';
-        incidentsInfo.value += '<td>' + incident.time + '</td>';
-        incidentsInfo.value += '<td>' + incident.case_number + '</td>';
-        incidentsInfo.value += '<td>' + neighborhood_name.value[incident.neighborhood_number-1].name + '</td>';
-        incidentsInfo.value += '<td>' + incident.incident + '</td>';
-        incidentsInfo.value += '</tr>';
-    }
+// Function to delete incident
+function deleteIncident(case_number) {
+    fetch(crime_url.value + '/remove-incident', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_number: case_number }),
+    })
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(() => {
+        refreshCrimes(limit.value);
+        console.log("Incident " + case_number + " deleted.");
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -644,9 +648,19 @@ function createIncident() {
                     <th>Case Number</th>
                     <th>Neighborhood Name</th>
                     <th>Incident Type</th>
+                    <th>Delete Incident</th>
                 </tr>
             </thead>
-            <tbody v-html="incidentsInfo"></tbody>
+            <tbody>
+                <tr v-for="incident in crime_table"> 
+                    <td> {{ incident.date }} </td>
+                    <td> {{ incident.time }} </td>
+                    <td> {{ incident.case_number }} </td>
+                    <td> {{ neighborhood_name[ incident.neighborhood_number-1 ].name }} </td>
+                    <td> {{ incident.incident }} </td>
+                    <button class="button delete-button" type="button" @click="deleteIncident(incident.case_number)">Delete</button>
+                </tr>
+            </tbody>
         </table>
     </div>
 </template>
@@ -768,9 +782,22 @@ input:checked + .slider:before {
     width: 8rem;
 }
 
+.delete-button {
+    background-color: #D32323;
+    width: 6rem;
+    margin: auto;
+}
+
+.delete-button:hover {
+    background-color: #ab2020;
+}
+
+thead th {
+    text-align: center;
+}
+
 table, th, td {
     margin-top: 1rem;
-    border: 1.5px solid black;
     text-align: center;
 }
 
