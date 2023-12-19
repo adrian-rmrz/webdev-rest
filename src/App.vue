@@ -1,6 +1,10 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
+let incidentsInfo = ref('');
+let neighborhood_name = ref([]);
+let coordChecked = ref(false);
+let limit = ref(1000);
 let crime_url = ref('');
 let crime_table = ref([]);
 let crime_code = ref([]);
@@ -54,6 +58,53 @@ onMounted(() => {
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
 
+    // Drag function
+    map.leaflet.on('dragend', () => {
+        let center = map.leaflet.getCenter()
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + center.lat + '&lon=' + center.lng + '&format=json&limit=1'
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        fetch(url).then((response) => {
+            return response.json();
+        }).then((data) => {
+            if (data.address.hasOwnProperty('house_number')) {
+                document.getElementById('address').value = data.address.house_number + ' ' + data.address.road;
+            } else {
+                document.getElementById('address').value = data.address.road;
+            }
+        })
+
+        refreshCrimes(limit.value);
+    });
+
+    // Zoom function
+    map.leaflet.on('zoomend', () => {
+        let center = map.leaflet.getCenter()
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + center.lat + '&lon=' + center.lng + '&format=json&limit=1'
+
+        document.getElementById('latitude').value = center.lat;
+        document.getElementById('longitude').value = center.lng;
+
+        fetch(url).then((response) => {
+            return response.json();
+        }).then((data) => {
+            if (data.address.hasOwnProperty('house_number')) {
+                document.getElementById('address').value = data.address.house_number + ' ' + data.address.road;
+            } else {
+                document.getElementById('address').value = data.address.road;
+            }
+        })
+
+        refreshCrimes(limit.value);
+    });
+
     // Get boundaries for St. Paul neighborhoods
     let district_boundary = new L.geoJson();
     district_boundary.addTo(map.leaflet);
@@ -76,80 +127,88 @@ onMounted(() => {
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
-    fetch(crime_url.value + '/codes?').then((res) => {
-            return res.json()
-        }).then((code) => {
-            crime_code = code;
-        }).catch((error) => {
-            console.log(error.message);
-        });
-
-    fetch(crime_url.value + '/neighborhoods?').then((res) => {
-            return res.json()
-        }).then((hood) => {
-            crime_neighborhood = hood;
-        }).catch((error) => {
-            console.log(error.message);
-        });
-
     //       get initial 1000 crimes
-    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
+    fetch(crime_url.value + '/neighborhoods').then((response) => {
         return response.json();
-    }).then((data) => {
-        
-        //loop to replace code with type
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < crime_code.length; j++) {
-                if (data[i].code == crime_code[j].code)
-                {
-                    data[i].code = crime_code[j].type;
-                }
-            delete data[i].incident; //remove redundant incident column
-        }}
+    }).then((result) => {
+        neighborhood_name.value = result;
 
-        //loop to replace number with name
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < crime_neighborhood.length; j++) {
-                if (data[i].neighborhood_number == crime_neighborhood[j].id)
-                {
-                    data[i].neighborhood_number = crime_neighborhood[j].name;
-                }
-        }};
         
-        // function task(j) { 
-        //     setTimeout(function() { 
-        //         let loc = crime_neighborhood[j].name + ', st. paul, minnesota';
-        //         let req = fetch('https://nominatim.openstreetmap.org/search?q='+ loc +'&format=json&limit=1');
-        //         Promise.all([req])
-        //         .then((response) => {
-        //         return Promise.all([response[0].json()]);
-        //         }).then((data) => {
-        //         console.log(data);
-        //         let lat = parseFloat(data[0][0].lat);
-        //         let lon = parseFloat(data[0][0].lon);
-        //         L.marker([lat, lon]).addTo(map);
-        //         }).catch((error) => { 
-        //         console.log(error.message)}
-        //     )}, 2000 * j);
-        // } 
-        // //add markers to neighborhoods
-        // for (let j = 0; j < crime_neighborhood.length; j++) {
-        //     task(j);
-        //     };
-
-        let jsonString = JSON.stringify(data);
-        jsonString = jsonString.replaceAll("code", "incident_type");
-        jsonString = jsonString.replaceAll("neighborhood_number", "neighborhood_name");
-        data = JSON.parse(jsonString);
-
-        table_headings = Object.keys(data[0]);
-        crime_table = data;
-        
-        console.log(crime_table);
-        refresh.value += 1;
     }).catch((error) => {
         console.log(error.message);
     });
+
+    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
+        return response.json();
+    }).then((result) => {
+        updateTable(result);
+    }).catch((error) => {
+        console.log(error.message);
+    });
+
+
+}
+
+// Function to retrieve crimes that are within map view
+function refreshCrimes(limit) {
+    let bounds = map.leaflet.getBounds();
+    let nw_corner = bounds.getNorthWest();
+    let se_corner = bounds.getSouthEast();
+
+    let max_lat = nw_corner.lat;
+    let min_lat = se_corner.lat;
+    let max_lng = se_corner.lng;
+    let min_lng = nw_corner.lng;
+
+    let url = crime_url.value + '/incidents?limit=' + limit;
+    let neigh_array = [];
+    let neigh_number = 0;
+
+    for (let neigh_marker of map.neighborhood_markers) {
+        let latitude = neigh_marker.location[0];
+        let longitude = neigh_marker.location[1];
+
+        if (isBetween(latitude, min_lat, max_lat) && isBetween(longitude, min_lng, max_lng)) {
+            neigh_array.push(neigh_number);
+        }
+
+        neigh_number += 1;
+    }
+
+    if (neigh_array.length > 0) {
+        url += '&neighborhoods=' + checkNeighborhood(neigh_array);
+    }
+
+    url += checkUIControls();
+
+    fetch(url).then((response) => {
+        return response.json();
+    }).then((result) => {
+        updateTable(result);
+    }).catch((error) => {
+        console.log(error.message);
+    });
+}
+
+// Function to return if value is between min and max values
+function isBetween(value, min, max) {
+    return value >= min && value <= max;
+}
+
+// Function to update the table with the new values
+function updateTable(data) {
+    incidentsInfo.value = '';
+
+    for (let incident of data) {
+        // Replace incidentsInfo with new incidents
+        incidentsInfo.value += '<tr>'
+        incidentsInfo.value += '<td>' + incident.date + '</td>';
+        incidentsInfo.value += '<td>' + incident.time + '</td>';
+        incidentsInfo.value += '<td>' + incident.case_number + '</td>';
+        incidentsInfo.value += '<td>' + neighborhood_name.value[incident.neighborhood_number-1].name + '</td>';
+        incidentsInfo.value += '<td>' + incident.incident + '</td>';
+        incidentsInfo.value += '</tr>';
+    }
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -166,129 +225,163 @@ function closeDialog() {
     }
 }
 
-//Refresh table when user changed the filter
-function tableRefresh() {
-    let url = crime_url.value + '/incidents?neighborhood=';
-    
-    if (document.getElementById('Conway/Battlecreek/Highwood').checked){
-        url += (document.getElementById('Conway/Battlecreek/Highwood').value + ",");
+// Function called when user presses 'Go' button
+function goCoord() {
+    let longitude = 0;
+    let latitude = 0;
+
+    let longitude_el = document.getElementById('longitude');
+    let latitude_el = document.getElementById('latitude');
+    let address_el = document.getElementById('address');
+
+    // If coordChecked is true, grab the coordinates
+    // Else, grab the address
+    if (coordChecked.value) {
+        latitude = latitude_el.value;
+        longitude = longitude_el.value;
+
+        let url = 'https://nominatim.openstreetmap.org/reverse?lat=' + latitude + '&lon=' + longitude + '&format=json&limit=1'
+
+        fetch(url).then( (response) => {
+            return response.json();
+        }).then( (data) => {
+            address_el.value = data.address.road;
+
+            clampView(latitude, longitude);
+        }).catch( (error) => {
+            console.error(error);
+        });
+    } else {
+        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + '' + '&format=json&limit=1';
+        
+        fetch(url).then( (response) => {
+            return response.json();
+        }).then( (data) => {
+            longitude = data[0].lon;
+            latitude = data[0].lat;
+
+            longitude_el.value = longitude;
+            latitude_el.value = latitude;
+
+            clampView(latitude, longitude);
+        }).catch( (error) => {
+            console.error(error);
+        });
     }
-    if (document.getElementById('Greater East Side').checked){
-        url += (document.getElementById('Greater East Side').value + ",");
-    }
-    if (document.getElementById('West Side').checked){
-        url += (document.getElementById('West Side').value + ",");
-    }
-    if (document.getElementById('Daytons Bluff').checked){
-        url += (document.getElementById('Daytons Bluff').value + ",");
-    }
-    if (document.getElementById('Payne/Phalen').checked){
-        url += (document.getElementById('Payne/Phalen').value + ",");
-    }
-    if (document.getElementById('North End').checked){
-        url += (document.getElementById('North End').value + ",");
-    }
-    if (document.getElementById('Thomas/Dale(Frogtown)').checked){
-        url += (document.getElementById('Thomas/Dale(Frogtown)').value + ",");
-    }
-    if (document.getElementById('Summit/University').checked){
-        url += (document.getElementById('Summit/University').value + ",");
-    }
-    if (document.getElementById('Como').checked){
-        url += (document.getElementById('Como').value + ",");
-    }
-    if (document.getElementById('Hamline/Midway').checked){
-        url += (document.getElementById('Hamline/Midway').value + ",");
-    }
-    if (document.getElementById('St. Anthony').checked){
-        url += (document.getElementById('St. Anthony').value + ",");
-    }
-    if (document.getElementById('Union Park').checked){
-        url += (document.getElementById('Union Park').value + ",");
-    }
-    if (document.getElementById('Macalester-Groveland').checked){
-        url += (document.getElementById('Macalester-Groveland').value + ",");
-    }
-    if (document.getElementById('Highland').checked){
-        url += (document.getElementById('Highland').value + ",");
-    }
-    if (document.getElementById('Capitol River').checked){
-        url += (document.getElementById('Capitol River').value + ",");
+}
+
+function clampView(latitude, longitude) {
+    // Clamp the latitude and longitude
+    if (latitude > 45.008206) {
+        latitude = 45.008206;
+    } else if (latitude < 44.883658) {
+        latitude = 44.883658;
     }
 
-    url += "&incident=";
+    if ( longitude < -93.217977 ) {
+        longitude = -93.217977;
+    } else if ( longitude > -92.993787 ) {
+        longitude = -92.993787;
+    }
+
+    map.leaflet.setView([latitude, longitude], map.leaflet.getZoom());
+}
+
+// Returns the neighborhoods on the map
+function checkNeighborhood(data) {
+    let retString = "";
+
+    // If there are neighbors within the map, add them to the url
+    if (data.length > 0) {
+        for (let neigh of data) {
+            let name = neighborhood_name.value[neigh].name;
+
+            if (document.getElementById(name).checked) {
+                retString += (document.getElementById(name).value + ",");
+            }
+        }
+    }
+
+    return retString;
+}
+
+// Checks which boxes were checked on controls
+function checkUIControls() {
+    let url = "";
+    
     if (document.getElementById('Burglary').checked){
-        url += (document.getElementById('Burglary').value + ",");
+        url += ("&incident=" + document.getElementById('Burglary').value + ",");
     }
     if (document.getElementById('Rape').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Rape').value + ",");
     }
     if (document.getElementById('Robbery').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Robbery').value + ",");
     }
     if (document.getElementById('Theft').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Theft').value + ",");
     }
     if (document.getElementById('Auto Theft').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Auto Theft').value + ",");
     }
     if (document.getElementById('Narcotics').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Narcotics').value + ",");
     }
     if (document.getElementById('Discharge').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Discharge').value + ",");
     }
     if (document.getElementById('Vandalism').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Vandalism').value + ",");
     }
     if (document.getElementById('Assault').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Assault').value + ",");
     }
     if (document.getElementById('Arson').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Arson').value + ",");
     }
     if (document.getElementById('Homicide').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
         url += (document.getElementById('Homicide').value + ",");
     }
 
     url += ("&start_date=" + document.getElementById('start_date').value);
     url += ("&end_date=" + document.getElementById('end_date').value);
-    
-    url += ('&limit=' + document.getElementById('max_incidents').value);
 
-    fetch(url).then((response) => {
-        return response.json();
-    }).then((data) => {
-        
-        //loop to replace code with type
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < crime_code.length; j++) {
-                if (data[i].code == crime_code[j].code)
-                {
-                    data[i].code = crime_code[j].type;
-                }
-            delete data[i].incident; //remove redundant incident column
-        }}
-
-        //loop to replace number with name
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < crime_neighborhood.length; j++) {
-                if (data[i].neighborhood_number == crime_neighborhood[j].id)
-                {
-                    data[i].neighborhood_number = crime_neighborhood[j].name;
-                }
-        }}
-        let jsonString = JSON.stringify(data);
-        jsonString = jsonString.replaceAll("code", "incident_type");
-        jsonString = jsonString.replaceAll("neighborhood_number", "neighborhood_name");
-        data = JSON.parse(jsonString);
-        crime_table = data;
-        
-        console.log(crime_table);
-        refresh.value += 1;
-    }).catch((error) => {
-        console.log(error.message);
-    });
+    return url;
+}
+//Refresh table when user changed the filter
+function tableRefresh() {
+    limit.value = document.getElementById('max_incidents').value;
+    refreshCrimes(limit.value);
 }
 
 //Create and insert new incident
@@ -383,14 +476,29 @@ function createIncident() {
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
     <div class="grid-container ">
-        <div class="grid-x grid-padding-x align-justify">
+        <div class="grid-x grid-padding-x align-justify coord-bar">
             <div class="grid-x">
-                <p class="space-left">Longitude: </p>
-                <input id="longitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
-                <p class="space-left">Latitude:</p>
-                <input id="latitude" class="coord-input space-left" type="text" placeholder="http://localhost:8000"/>
+                <div id="lat-input" class="grid-x" v-show="coordChecked">
+                    <p class="space-left">Latitude:</p>
+                    <input id="latitude" class="coord-input space-left" type="text"/>
+                </div>
+                <div id="long-input" class="grid-x" v-show="coordChecked">
+                    <p class="space-left">Longitude: </p>
+                    <input id="longitude" class="coord-input space-left" type="text"/>
+                </div>
+                <div id="add-input" class="grid-x" v-show="!coordChecked">
+                    <p class="space-left">Address: </p>
+                    <input id="address" class="coord-input space-left" type="text"/>
+                </div>
             </div>
-            <button class="button coord-button" type="button">Go</button>
+            <div class="grid-x">
+                <p>Lat/Long:</p>
+                <label class="switch space-left">
+                    <input type="checkbox" id="coord-check" v-model="coordChecked"/>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button class="button coord-button" type="button" @click="goCoord">Go</button>
         </div>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
@@ -398,7 +506,7 @@ function createIncident() {
         <div class="grid-container">
             <div class="grid-x grid-padding-x">
                 <div class="large-4">
-                    <strong>incident_type</strong><br>
+                    <strong>Incident Type</strong><br>
                     <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
                         <label for="Burglary">Burglary</label> 
                     <input checked="true" type="checkbox" id="Rape" value="Rape" @change="tableRefresh"/>
@@ -423,14 +531,14 @@ function createIncident() {
                         <label for="Homicide">Homicide</label>
                 </div>
                 <div class="large-4">
-                    <strong>neighborhood_name</strong><br>
+                    <strong>Neighborhood Name</strong><br>
                     <input checked="true" type="checkbox" id="Conway/Battlecreek/Highwood" value=1 @change="tableRefresh"/>
                         <label for="Conway/Battlecreek/Highwood">Conway/Battlecreek/Highwood</label> 
                     <input checked="true" type="checkbox" id="Greater East Side" value=2 @change="tableRefresh"/>
                         <label for="Greater East Side">Greater East Side</label> <br>
                     <input checked="true" type="checkbox" id="West Side" value=3 @change="tableRefresh"/>
                         <label for="West Side">West Side</label>
-                    <input checked="true" type="checkbox" id="Daytons Bluff" value=4 @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Dayton's Bluff" value=4 @change="tableRefresh"/>
                         <label for="Dayton's Bluff">Dayton's Bluff</label> 
                     <input checked="true" type="checkbox" id="Payne/Phalen" value=5 @change="tableRefresh"/>
                         <label for="Payne/Phalen">Payne/Phalen</label> <br> 
@@ -454,11 +562,13 @@ function createIncident() {
                         <label for="Macalester-Groveland">Macalester-Groveland</label>
                     <input checked="true" type="checkbox" id="Highland" value=15 @change="tableRefresh"/>
                         <label for="Highland">Highland</label>
-                    <input checked="true" type="checkbox" id="Capitol River" value=16 @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Summit Hill" value=16 @change="tableRefresh"/>
+                        <label for="Summit Hill">Summit Hill</label>
+                    <input checked="true" type="checkbox" id="Capitol River" value=17 @change="tableRefresh"/>
                         <label for="Capitol River">Capitol River</label>
                 </div>
                 <div class="large-2">
-                    <strong>date_range</strong><br>
+                    <strong>Date Range</strong><br>
                     <select id="start_date" @change="tableRefresh">
                         <option selected="selected" value="2014-01-01" > 2014-01-01</option>
                         <option value="2015-01-01" > 2015-01-01</option>
@@ -486,7 +596,7 @@ function createIncident() {
                     
                 </div>
                 <div class="large-2">
-                    <strong>max incidents</strong><br>
+                    <strong>Max Incidents</strong><br>
                     <select name="max_incidents" id="max_incidents" @change="tableRefresh">
                         <option value="10">10</option>
                         <option value="50">50</option>
@@ -498,19 +608,17 @@ function createIncident() {
                 </div>
             </div>
         </div>
-        <table id="crime-list" :key="refresh">
-            <tr> 
-                <th v-for="head in table_headings"> {{ head }} </th>
-            </tr>
-            <tr v-for="incident in crime_table"> 
-                <td> {{ incident.case_number }} </td>
-                <td> {{ incident.date }} </td>
-                <td> {{ incident.time }} </td>
-                <td> {{ incident.incident_type }} </td>
-                <td> {{ incident.police_grid }} </td>
-                <td> {{ incident.neighborhood_name }} </td>
-                <td> {{ incident.block }} </td>
-            </tr>
+        <table id="crime-list">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Case Number</th>
+                    <th>Neighborhood Name</th>
+                    <th>Incident Type</th>
+                </tr>
+            </thead>
+            <tbody v-html="incidentsInfo"></tbody>
         </table>
     </div>
 </template>
@@ -554,10 +662,72 @@ function createIncident() {
     width: 7.5rem;
 }
 
+.coord-bar {
+    margin-top: 1rem;
+}
+
+.coord-bar p {
+    padding-top: 8px;
+}
+
 .space-left {
     margin-left: 1rem;
 }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+}
+
+input:checked + .slider {
+  background-color: #1779ba;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #1779ba;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+#add-input {
+    margin-right: 26.5rem;
+}
+
+#crime-list {
+    margin-top: 1rem;
+}
 #closebutton {
     float:right;
 }
