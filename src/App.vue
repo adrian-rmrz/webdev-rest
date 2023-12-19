@@ -215,8 +215,8 @@ function tableRefresh() {
     if (document.getElementById('Capitol River').checked){
         url += (document.getElementById('Capitol River').value + ",");
     }
-    
-    url += '&limit=1000';
+
+    url += ('&limit=' + document.getElementById('max_incidents').value);
 
     fetch(url).then((response) => {
         return response.json();
@@ -433,14 +433,13 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>max incidents</strong><br>
-                    <select name="max_incidents" @change="tableRefresh">
-                        <option value="" disabled selected>Select</option>
+                    <select name="max_incidents" id="max_incidents" @change="tableRefresh">
                         <option value="10">10</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="250">250</option>
                         <option value="500">500</option>
-                        <option value="1000">1000</option>
+                        <option selected="selected" value="1000">1000</option>
                     </select>  
                 </div>
             </div>
@@ -507,6 +506,10 @@ function createIncident() {
 
 #closebutton {
     float:right;
+}
+
+#crime-list {
+    margin-bottom: 5%;
 }
 
 table, th, td {
