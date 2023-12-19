@@ -177,6 +177,39 @@ app.get('/incidents', (req, res) => {
 
     };
 
+    if (req.query.hasOwnProperty('incident')) {
+        let arr = req.query.incident.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE incident IN (?'; 
+        } else {
+            sql += ' AND incident IN (?'; 
+        };
+        params.push(arr[0].charAt(0).toUpperCase() 
+        + arr[0].substr(1));
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(arr[i].charAt(0).toUpperCase() 
+            + arr[i].substr(1));
+        };
+
+        for (let i = 0; i < params.length; i++) {
+            // Split the string into an array of words
+            let words = params[i].split(" ");
+          
+            for (let j = 0; j < words.length; j++) {
+              // Capitalize the first letter of each word
+              words[j] = words[j].charAt(0).toUpperCase() + words[j].slice(1);
+            }
+          
+            // Join the words back into a string
+            params[i] = words.join(" ");
+          }
+
+        sql += ')'; 
+    };
+
     if (req.query.hasOwnProperty('code')) {
         let arr = req.query.code.split(",");
 

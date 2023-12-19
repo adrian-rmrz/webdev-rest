@@ -6,6 +6,11 @@ let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
 let crime_url = ref('');
+let crime_table = ref([]);
+let crime_code = ref([]);
+let table_headings = ref([]);
+let crime_neighborhood = ref([]);
+let refresh = ref(0);
 let dialog_err = ref(false);
 let map = reactive(
     {
@@ -155,24 +160,26 @@ function refreshCrimes(limit) {
     let max_lng = se_corner.lng;
     let min_lng = nw_corner.lng;
 
-    let url = crime_url.value + '/incidents?limit=' + limit + '&neighborhood=';
+    let url = crime_url.value + '/incidents?limit=' + limit;
+    let neigh_array = [];
     let neigh_number = 0;
-    let first_neigh = true;
 
     for (let neigh_marker of map.neighborhood_markers) {
         let latitude = neigh_marker.location[0];
         let longitude = neigh_marker.location[1];
 
         if (isBetween(latitude, min_lat, max_lat) && isBetween(longitude, min_lng, max_lng)) {
-            if (!first_neigh) {
-                url += ',' + neigh_number;
-            } else {
-                url += neigh_number;
-                first_neigh = false;
-            }
+            neigh_array.push(neigh_number);
         }
+
         neigh_number += 1;
     }
+
+    if (neigh_array.length > 0) {
+        url += '&neighborhoods=' + checkNeighborhood(neigh_array);
+    }
+
+    url += checkUIControls();
 
     fetch(url).then((response) => {
         return response.json();
@@ -279,9 +286,187 @@ function clampView(latitude, longitude) {
 
     map.leaflet.setView([latitude, longitude], map.leaflet.getZoom());
 }
+
+// Returns the neighborhoods on the map
+function checkNeighborhood(data) {
+    let retString = "";
+
+    // If there are neighbors within the map, add them to the url
+    if (data.length > 0) {
+        for (let neigh of data) {
+            let name = neighborhood_name.value[neigh].name;
+
+            if (document.getElementById(name).checked) {
+                retString += (document.getElementById(name).value + ",");
+            }
+        }
+    }
+
+    return retString;
+}
+
+// Checks which boxes were checked on controls
+function checkUIControls() {
+    let url = "";
+    
+    if (document.getElementById('Burglary').checked){
+        url += ("&incident=" + document.getElementById('Burglary').value + ",");
+    }
+    if (document.getElementById('Rape').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Rape').value + ",");
+    }
+    if (document.getElementById('Robbery').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Robbery').value + ",");
+    }
+    if (document.getElementById('Theft').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Theft').value + ",");
+    }
+    if (document.getElementById('Auto Theft').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Auto Theft').value + ",");
+    }
+    if (document.getElementById('Narcotics').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Narcotics').value + ",");
+    }
+    if (document.getElementById('Discharge').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Discharge').value + ",");
+    }
+    if (document.getElementById('Vandalism').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Vandalism').value + ",");
+    }
+    if (document.getElementById('Assault').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Assault').value + ",");
+    }
+    if (document.getElementById('Arson').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Arson').value + ",");
+    }
+    if (document.getElementById('Homicide').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Homicide').value + ",");
+    }
+
+    url += ("&start_date=" + document.getElementById('start_date').value);
+    url += ("&end_date=" + document.getElementById('end_date').value);
+
+    return url;
+}
+//Refresh table when user changed the filter
+function tableRefresh() {
+    limit.value = document.getElementById('max_incidents').value;
+    refreshCrimes(limit.value);
+}
+
+//Create and insert new incident
+function openForm() {
+    if (crime_url.value !== "") {
+        let dialog = document.getElementById('form-dialog');
+        dialog.showModal();
+    }
+}
+
+function closeForm() {
+    let dialog = document.getElementById('form-dialog');
+    dialog.close();
+}
+
+let formCaseNum = ref("");
+let formDateTime = ref("");
+let formCode = ref("");
+let formIncident = ref("");
+let formPoGrid = ref("");
+let formNeiNum = ref("");
+let formBlock = ref("");
+
+function createIncident() {
+    //PUT request:
+    let dialog = document.getElementById('form-dialog');
+    let putURL = crime_url + "/new-incident";
+    let newData = {
+        case_number: formCaseNum,
+        data_time: formDateTime,
+        code: formCode,
+        incident: formIncident,
+        police_grid: formPoGrid,
+        neighborhood_number: formNeiNum,
+        block: formBlock,
+    };
+
+    fetch(putURL, {method: 'PUT',
+    body: JSON.stringify(newData)
+    }).then(response => {
+        console.log(response.status);
+        return response.json();
+    }).then(data => {
+        console.log('PUT request successful:', data);
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+
+    dialog.close();
+}
+
 </script>
 
 <template>
+    
+    <div class="grid-x grid-padding-x">
+            <button type="button" class="cell large-auto button" @click="openForm" style="background-color: green;">New Incident Form</button>
+            <button type="button" class="cell large-auto button" @click="" style="background-color: rebeccapurple;">About</button>
+    </div>
+    <dialog id="form-dialog">
+        <h1 class="dialog-header">Form</h1>
+        <label class="dialog-label">case_number</label>
+        <input id="formCaseNum" class="dialog-input" type="text" v-model="formCaseNum" placeholder="########" />
+        <br/>
+        <label class="dialog-label">Date_Time</label>
+        <input id="formDate" class="dialog-input" type="text" v-model="formDateTime" placeholder="YY-MM-DDT00:00:00" />
+        <br/>
+        <label class="dialog-label">Code</label>
+        <input id="formCode" class="dialog-input" type="text" v-model="formCode" placeholder="#"/>
+        <br/>
+        <label class="dialog-label">Incident</label>
+        <input id="formIncident" class="dialog-input" type="text" v-model="formIncident" placeholder="" />
+        <br/>
+        <label class="dialog-label">police_grid</label>
+        <input id="formPoGrid" class="dialog-input" type="text" v-model="formPoGrid" placeholder="" />
+        <br/>
+        <label class="dialog-label">neighborhood_number</label>
+        <input id="formNeiNum" class="dialog-input" type="text" v-model="formNeiNum" placeholder="" />
+        <br/>
+        <label class="dialog-label">block</label>
+        <input id="formBlock" class="dialog-input" type="text" v-model="formBlock" placeholder="" />
+        <br/>
+        <button class="button" id="create" type="button" @click="createIncident">Create</button>
+        <button class="button" id="closebutton" type="button" @click="closeForm">Cancel</button>
+    </dialog>
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">URL: </label>
@@ -318,6 +503,111 @@ function clampView(latitude, longitude) {
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+        <div class="grid-container">
+            <div class="grid-x grid-padding-x">
+                <div class="large-4">
+                    <strong>Incident Type</strong><br>
+                    <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
+                        <label for="Burglary">Burglary</label> 
+                    <input checked="true" type="checkbox" id="Rape" value="Rape" @change="tableRefresh"/>
+                        <label for="Rape">Rape</label> 
+                    <input checked="true" type="checkbox" id="Robbery" value="Robbery" @change="tableRefresh"/>
+                        <label for="Robbery">Robbery</label>
+                    <input checked="true" type="checkbox" id="Theft" value="Theft" @change="tableRefresh"/>
+                        <label for="Theft">Theft</label> <br>
+                    <input checked="true" type="checkbox" id="Auto Theft" value="Auto Theft" @change="tableRefresh"/>
+                        <label for="Auto Theft">Auto Theft</label> 
+                    <input checked="true" type="checkbox" id="Narcotics" value="Narcotics" @change="tableRefresh"/>
+                        <label for="Narcotics">Narcotics</label>
+                    <input checked="true" type="checkbox" id="Discharge" value="Discharge" @change="tableRefresh"/>
+                        <label for="Discharge">Discharge</label> <br>
+                    <input checked="true" type="checkbox" id="Vandalism" value="Vandalism,Graffiti" @change="tableRefresh"/>
+                        <label for="Vandalism">Vandalism</label>
+                    <input checked="true" type="checkbox" id="Assault" value="Simple Asasult Dom,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
+                        <label for="Assault">Assault</label>
+                    <input checked="true" type="checkbox" id="Arson" value="Arson" @change="tableRefresh"/>
+                        <label for="Arson">Arson</label> <br>
+                    <input checked="true" type="checkbox" id="Homicide" value="Homicide" @change="tableRefresh"/>
+                        <label for="Homicide">Homicide</label>
+                </div>
+                <div class="large-4">
+                    <strong>Neighborhood Name</strong><br>
+                    <input checked="true" type="checkbox" id="Conway/Battlecreek/Highwood" value=1 @change="tableRefresh"/>
+                        <label for="Conway/Battlecreek/Highwood">Conway/Battlecreek/Highwood</label> 
+                    <input checked="true" type="checkbox" id="Greater East Side" value=2 @change="tableRefresh"/>
+                        <label for="Greater East Side">Greater East Side</label> <br>
+                    <input checked="true" type="checkbox" id="West Side" value=3 @change="tableRefresh"/>
+                        <label for="West Side">West Side</label>
+                    <input checked="true" type="checkbox" id="Dayton's Bluff" value=4 @change="tableRefresh"/>
+                        <label for="Dayton's Bluff">Dayton's Bluff</label> 
+                    <input checked="true" type="checkbox" id="Payne/Phalen" value=5 @change="tableRefresh"/>
+                        <label for="Payne/Phalen">Payne/Phalen</label> <br> 
+                    <input checked="true" type="checkbox" id="North End" value=6 @change="tableRefresh"/>
+                        <label for="North End">North End</label>
+                    <input checked="true" type="checkbox" id="Thomas/Dale(Frogtown)" value=7 @change="tableRefresh"/>
+                        <label for="Thomas/Dale(Frogtown)">Thomas/Dale(Frogtown)</label> <br>
+                    <input checked="true" type="checkbox" id="Summit/University" value=8 @change="tableRefresh"/>
+                        <label for="Summit/University">Summit/University</label>
+                    <input checked="true" type="checkbox" id="West Seventh" value=9 @change="tableRefresh"/>
+                        <label for="West Seventh">West Seventh</label>
+                    <input checked="true" type="checkbox" id="Como" value=10 @change="tableRefresh"/>
+                        <label for="Como">Como</label> <br>
+                    <input checked="true" type="checkbox" id="Hamline/Midway" value=11 @change="tableRefresh"/>
+                        <label for="Hamline/Midway">Hamline/Midway</label>
+                    <input checked="true" type="checkbox" id="St. Anthony" value=12 @change="tableRefresh"/>
+                        <label for="St. Anthony">St. Anthony</label>
+                    <input checked="true" type="checkbox" id="Union Park" value=13 @change="tableRefresh"/>
+                        <label for="Union Park">Union Park</label> <br>
+                    <input checked="true" type="checkbox" id="Macalester-Groveland" value=14 @change="tableRefresh"/>
+                        <label for="Macalester-Groveland">Macalester-Groveland</label>
+                    <input checked="true" type="checkbox" id="Highland" value=15 @change="tableRefresh"/>
+                        <label for="Highland">Highland</label>
+                    <input checked="true" type="checkbox" id="Summit Hill" value=16 @change="tableRefresh"/>
+                        <label for="Summit Hill">Summit Hill</label>
+                    <input checked="true" type="checkbox" id="Capitol River" value=17 @change="tableRefresh"/>
+                        <label for="Capitol River">Capitol River</label>
+                </div>
+                <div class="large-2">
+                    <strong>Date Range</strong><br>
+                    <select id="start_date" @change="tableRefresh">
+                        <option selected="selected" value="2014-01-01" > 2014-01-01</option>
+                        <option value="2015-01-01" > 2015-01-01</option>
+                        <option value="2016-01-01" > 2016-01-01</option>
+                        <option value="2017-01-01" > 2017-01-01</option>
+                        <option value="2018-01-01" > 2018-01-01</option>
+                        <option value="2019-01-01" > 2019-01-01</option>
+                        <option value="2020-01-01" > 2020-01-01</option>
+                        <option value="2021-01-01" > 2021-01-01</option>
+                        <option value="2022-01-01" > 2022-01-01</option>
+                        <option value="2023-01-01" > 2023-01-01</option>
+                    </select> 
+                    <select id="end_date" @change="tableRefresh">
+                        <option value="2015-01-01" > 2015-01-01</option>
+                        <option value="2016-01-01" > 2016-01-01</option>
+                        <option value="2017-01-01" > 2017-01-01</option>
+                        <option value="2018-01-01" > 2018-01-01</option>
+                        <option value="2019-01-01" > 2019-01-01</option>
+                        <option value="2020-01-01" > 2020-01-01</option>
+                        <option value="2021-01-01" > 2021-01-01</option>
+                        <option value="2022-01-01" > 2022-01-01</option>
+                        <option value="2023-01-01" > 2023-01-01</option>
+                        <option selected="selected" value="2024-01-01" > 2024-01-01</option>
+                    </select>       
+                    
+                </div>
+                <div class="large-2">
+                    <strong>Max Incidents</strong><br>
+                    <select name="max_incidents" id="max_incidents" @change="tableRefresh">
+                        <option value="10">10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                        <option value="500">500</option>
+                        <option selected="selected" value="1000">1000</option>
+                    </select>  
+                </div>
+            </div>
+        </div>
         <table id="crime-list">
             <thead>
                 <tr>
@@ -342,6 +632,7 @@ function clampView(latitude, longitude) {
 
 #leafletmap {
     height: 500px;
+    margin-bottom: 1rem;
 }
 
 .dialog-header {
@@ -437,4 +728,18 @@ input:checked + .slider:before {
 #crime-list {
     margin-top: 1rem;
 }
+#closebutton {
+    float:right;
+}
+
+#crime-list {
+    margin-bottom: 5%;
+}
+
+table, th, td {
+    margin-top: 1rem;
+    border: 1.5px solid black;
+    text-align: center;
+}
+
 </style>
