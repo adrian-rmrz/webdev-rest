@@ -26,23 +26,23 @@ let map = reactive(
             se: {lat: 44.883658, lng: -92.993787}
         },
         neighborhood_markers: [
-            {location: [44.942068, -93.020521], marker: null},
-            {location: [44.977413, -93.025156], marker: null},
-            {location: [44.931244, -93.079578], marker: null},
-            {location: [44.956192, -93.060189], marker: null},
-            {location: [44.978883, -93.068163], marker: null},
-            {location: [44.975766, -93.113887], marker: null},
-            {location: [44.959639, -93.121271], marker: null},
-            {location: [44.947700, -93.128505], marker: null},
-            {location: [44.930276, -93.119911], marker: null},
-            {location: [44.982752, -93.147910], marker: null},
-            {location: [44.963631, -93.167548], marker: null},
-            {location: [44.973971, -93.197965], marker: null},
-            {location: [44.949043, -93.178261], marker: null},
-            {location: [44.934848, -93.176736], marker: null},
-            {location: [44.913106, -93.170779], marker: null},
-            {location: [44.937705, -93.136997], marker: null},
-            {location: [44.949203, -93.093739], marker: null}
+            {location: [44.942068, -93.020521], marker: null, popupContent: 0},
+            {location: [44.977413, -93.025156], marker: null, popupContent: 0},
+            {location: [44.931244, -93.079578], marker: null, popupContent: 0},
+            {location: [44.956192, -93.060189], marker: null, popupContent: 0},
+            {location: [44.978883, -93.068163], marker: null, popupContent: 0},
+            {location: [44.975766, -93.113887], marker: null, popupContent: 0},
+            {location: [44.959639, -93.121271], marker: null, popupContent: 0},
+            {location: [44.947700, -93.128505], marker: null, popupContent: 0},
+            {location: [44.930276, -93.119911], marker: null, popupContent: 0},
+            {location: [44.982752, -93.147910], marker: null, popupContent: 0},
+            {location: [44.963631, -93.167548], marker: null, popupContent: 0},
+            {location: [44.973971, -93.197965], marker: null, popupContent: 0},
+            {location: [44.949043, -93.178261], marker: null, popupContent: 0},
+            {location: [44.934848, -93.176736], marker: null, popupContent: 0},
+            {location: [44.913106, -93.170779], marker: null, popupContent: 0},
+            {location: [44.937705, -93.136997], marker: null, popupContent: 0},
+            {location: [44.949203, -93.093739], marker: null, popupContent: 0}
         ]
     }
 );
@@ -128,25 +128,31 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value + '/neighborhoods').then((response) => {
-        return response.json();
-    }).then((result) => {
-        neighborhood_name.value = result;
+    let fetch_neigh = crime_url.value + '/neighborhoods';
+    let fetch_inc = crime_url.value + '/incidents?limit=1000';
 
+    Promise.all([fetch(fetch_neigh), fetch(fetch_inc)])
+    .then((response) => {
+        return Promise.all([response[0].json(), response[1].json()]);
+    }).then((result) => {
+        neighborhood_name.value = result[0];
+
+        for (let i = 0; i < map.neighborhood_markers.length; i++) {
+            let neigh_marker = map.neighborhood_markers[i];
+            let latitude = neigh_marker.location[0];
+            let longitude = neigh_marker.location[1];
+
+            let mark = L.marker([latitude, longitude]);
+            mark.addTo(map.leaflet);
+            map.neighborhood_markers[i].marker = mark;
+            map.neighborhood_markers[i].popupContent = 0;
+        }
         
+        updateTable(result[1]);
+        updateMarkerPopup(result[1]);
     }).catch((error) => {
         console.log(error.message);
     });
-
-    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
-        return response.json();
-    }).then((result) => {
-        updateTable(result);
-    }).catch((error) => {
-        console.log(error.message);
-    });
-
-
 }
 
 // Function to retrieve crimes that are within map view
@@ -169,6 +175,7 @@ function refreshCrimes(limit) {
         let longitude = neigh_marker.location[1];
 
         if (isBetween(latitude, min_lat, max_lat) && isBetween(longitude, min_lng, max_lng)) {
+            console.log("neigh_number: " + neigh_number);
             neigh_array.push(neigh_number);
         }
 
@@ -176,7 +183,7 @@ function refreshCrimes(limit) {
     }
 
     if (neigh_array.length > 0) {
-        url += '&neighborhoods=' + checkNeighborhood(neigh_array);
+        url += '&neighborhood=' + checkNeighborhood(neigh_array);
     }
 
     url += checkUIControls();
@@ -184,9 +191,27 @@ function refreshCrimes(limit) {
     fetch(url).then((response) => {
         return response.json();
     }).then((result) => {
+        console.log("URL: " + url);
+        console.log(result);
         updateTable(result);
+        updateMarkerPopup(result);
     }).catch((error) => {
         console.log(error.message);
+    });
+}
+
+// Update marker popups with new crimes information
+function updateMarkerPopup(data) {
+    map.neighborhood_markers.forEach((mark) => {
+        mark.popupContent = 0;
+    });
+
+    data.forEach((crime) => {
+        map.neighborhood_markers[crime.neighborhood_number-1].popupContent += 1;
+    });
+
+    map.neighborhood_markers.forEach((mark) => {
+        mark.marker.bindPopup(mark.popupContent.toString());
     });
 }
 
@@ -198,6 +223,7 @@ function isBetween(value, min, max) {
 // Function to update the table with the new values
 function updateTable(data) {
     incidentsInfo.value = '';
+    console.log(data);
 
     for (let incident of data) {
         // Replace incidentsInfo with new incidents
@@ -252,7 +278,7 @@ function goCoord() {
             console.error(error);
         });
     } else {
-        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + '' + '&format=json&limit=1';
+        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + ' St Paul Minnesota' + '&format=json&limit=1';
         
         fetch(url).then( (response) => {
             return response.json();
@@ -569,7 +595,8 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>Date Range</strong><br>
-                    <select id="start_date" @change="tableRefresh">
+                    <p>Start Date:</p>
+                    <select id="start_date" class="dropdown" @change="tableRefresh">
                         <option selected="selected" value="2014-01-01" > 2014-01-01</option>
                         <option value="2015-01-01" > 2015-01-01</option>
                         <option value="2016-01-01" > 2016-01-01</option>
@@ -581,7 +608,8 @@ function createIncident() {
                         <option value="2022-01-01" > 2022-01-01</option>
                         <option value="2023-01-01" > 2023-01-01</option>
                     </select> 
-                    <select id="end_date" @change="tableRefresh">
+                    <p>End Date:</p>
+                    <select id="end_date" class="dropdown" @change="tableRefresh">
                         <option value="2015-01-01" > 2015-01-01</option>
                         <option value="2016-01-01" > 2016-01-01</option>
                         <option value="2017-01-01" > 2017-01-01</option>
@@ -597,7 +625,7 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>Max Incidents</strong><br>
-                    <select name="max_incidents" id="max_incidents" @change="tableRefresh">
+                    <select name="max_incidents" class="dropdown" id="max_incidents" @change="tableRefresh">
                         <option value="10">10</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -734,6 +762,10 @@ input:checked + .slider:before {
 
 #crime-list {
     margin-bottom: 5%;
+}
+
+.dropdown {
+    width: 8rem;
 }
 
 table, th, td {
