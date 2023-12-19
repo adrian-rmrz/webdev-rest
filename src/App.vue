@@ -216,6 +216,41 @@ function tableRefresh() {
         url += (document.getElementById('Capitol River').value + ",");
     }
 
+    url += "&incident=";
+    if (document.getElementById('Burglary').checked){
+        url += (document.getElementById('Burglary').value + ",");
+    }
+    if (document.getElementById('Rape').checked){
+        url += (document.getElementById('Rape').value + ",");
+    }
+    if (document.getElementById('Robbery').checked){
+        url += (document.getElementById('Robbery').value + ",");
+    }
+    if (document.getElementById('Theft').checked){
+        url += (document.getElementById('Theft').value + ",");
+    }
+    if (document.getElementById('Auto Theft').checked){
+        url += (document.getElementById('Auto Theft').value + ",");
+    }
+    if (document.getElementById('Narcotics').checked){
+        url += (document.getElementById('Narcotics').value + ",");
+    }
+    if (document.getElementById('Discharge').checked){
+        url += (document.getElementById('Discharge').value + ",");
+    }
+    if (document.getElementById('Vandalism').checked){
+        url += (document.getElementById('Vandalism').value + ",");
+    }
+    if (document.getElementById('Assault').checked){
+        url += (document.getElementById('Assault').value + ",");
+    }
+    if (document.getElementById('Arson').checked){
+        url += (document.getElementById('Arson').value + ",");
+    }
+    if (document.getElementById('Homicide').checked){
+        url += (document.getElementById('Homicide').value + ",");
+    }
+
     url += ('&limit=' + document.getElementById('max_incidents').value);
 
     fetch(url).then((response) => {
@@ -381,10 +416,8 @@ function createIncident() {
                         <label for="Assault">Assault</label>
                     <input checked="true" type="checkbox" id="Arson" value="Arson" @change="tableRefresh"/>
                         <label for="Arson">Arson</label> <br>
-                    <input checked="true" type="checkbox" id="Homocide" value="100" @change="tableRefresh"/>
-                        <label for="Homocide">Homocide</label>
-                    <input checked="true" type="checkbox" id="Murder" value="110,120" @change="tableRefresh"/>
-                        <label for="Murder">Murder</label>
+                    <input checked="true" type="checkbox" id="Homicide" value="Homicide" @change="tableRefresh"/>
+                        <label for="Homicide">Homicide</label>
                 </div>
                 <div class="large-4">
                     <strong>neighborhood_name</strong><br>
