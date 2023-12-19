@@ -177,6 +177,24 @@ app.get('/incidents', (req, res) => {
 
     };
 
+    if (req.query.hasOwnProperty('incident')) {
+        let arr = req.query.incident.split(",");
+
+        if (params.length == 0) {
+            sql += ' WHERE incident IN (?'; 
+        } else {
+            sql += ' AND incident IN (?'; 
+        };
+        params.push(arr[0]);
+
+        for (let i = 1; i < arr.length; i++) {
+            sql += ', ?';
+            params.push(arr[i]);
+        };
+
+        sql += ')'; 
+    };
+
     if (req.query.hasOwnProperty('code')) {
         let arr = req.query.code.split(",");
 

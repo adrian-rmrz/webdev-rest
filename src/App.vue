@@ -168,7 +168,89 @@ function closeDialog() {
 
 //Refresh table when user changed the filter
 function tableRefresh() {
-    let url = crime_url.value + '/incidents?';
+    let url = crime_url.value + '/incidents?neighborhood=';
+    
+    if (document.getElementById('Conway/Battlecreek/Highwood').checked){
+        url += (document.getElementById('Conway/Battlecreek/Highwood').value + ",");
+    }
+    if (document.getElementById('Greater East Side').checked){
+        url += (document.getElementById('Greater East Side').value + ",");
+    }
+    if (document.getElementById('West Side').checked){
+        url += (document.getElementById('West Side').value + ",");
+    }
+    if (document.getElementById('Daytons Bluff').checked){
+        url += (document.getElementById('Daytons Bluff').value + ",");
+    }
+    if (document.getElementById('Payne/Phalen').checked){
+        url += (document.getElementById('Payne/Phalen').value + ",");
+    }
+    if (document.getElementById('North End').checked){
+        url += (document.getElementById('North End').value + ",");
+    }
+    if (document.getElementById('Thomas/Dale(Frogtown)').checked){
+        url += (document.getElementById('Thomas/Dale(Frogtown)').value + ",");
+    }
+    if (document.getElementById('Summit/University').checked){
+        url += (document.getElementById('Summit/University').value + ",");
+    }
+    if (document.getElementById('Como').checked){
+        url += (document.getElementById('Como').value + ",");
+    }
+    if (document.getElementById('Hamline/Midway').checked){
+        url += (document.getElementById('Hamline/Midway').value + ",");
+    }
+    if (document.getElementById('St. Anthony').checked){
+        url += (document.getElementById('St. Anthony').value + ",");
+    }
+    if (document.getElementById('Union Park').checked){
+        url += (document.getElementById('Union Park').value + ",");
+    }
+    if (document.getElementById('Macalester-Groveland').checked){
+        url += (document.getElementById('Macalester-Groveland').value + ",");
+    }
+    if (document.getElementById('Highland').checked){
+        url += (document.getElementById('Highland').value + ",");
+    }
+    if (document.getElementById('Capitol River').checked){
+        url += (document.getElementById('Capitol River').value + ",");
+    }
+    
+    url += '&limit=1000';
+
+    fetch(url).then((response) => {
+        return response.json();
+    }).then((data) => {
+        
+        //loop to replace code with type
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < crime_code.length; j++) {
+                if (data[i].code == crime_code[j].code)
+                {
+                    data[i].code = crime_code[j].type;
+                }
+            delete data[i].incident; //remove redundant incident column
+        }}
+
+        //loop to replace number with name
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < crime_neighborhood.length; j++) {
+                if (data[i].neighborhood_number == crime_neighborhood[j].id)
+                {
+                    data[i].neighborhood_number = crime_neighborhood[j].name;
+                }
+        }}
+        let jsonString = JSON.stringify(data);
+        jsonString = jsonString.replaceAll("code", "incident_type");
+        jsonString = jsonString.replaceAll("neighborhood_number", "neighborhood_name");
+        data = JSON.parse(jsonString);
+        crime_table = data;
+        
+        console.log(crime_table);
+        refresh.value += 1;
+    }).catch((error) => {
+        console.log(error.message);
+    });
 }
 
 //Create and insert new incident
@@ -279,26 +361,26 @@ function createIncident() {
             <div class="grid-x grid-padding-x">
                 <div class="large-4">
                     <strong>incident_type</strong><br>
-                    <input checked="true" type="checkbox" id="Burglary" value="500,510,511,513,515,516,520,521,523,525,526,530,531,533,535,536,540,541,543,545,546,550,551,553,555,556,560,561,563,565,566" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Burglary" value="Burglary" @change="tableRefresh"/>
                         <label for="Burglary">Burglary</label> 
-                    <input checked="true" type="checkbox" id="Rape" value="210,220" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Rape" value="Rape" @change="tableRefresh"/>
                         <label for="Rape">Rape</label> 
-                    <input checked="true" type="checkbox" id="Robbery" value="300,311,312,313,314,321,322,323,324,331,332,333,334,341,342,343,344,351,352,353,354,361,363,364,371,372,373,374" @change="tableRefresh"/>
-                        <label for="Robbery">Robbery</label> <br>
-                    <input checked="true" type="checkbox" id="Theft" value="600,601,611,612,613,614,621,622,623,630,631,632,633,640,641,642,643,651,652,653,661,662,663,671,672,673,681,682,683,691,692,693" @change="tableRefresh"/>
-                        <label for="Theft">Theft</label> 
-                    <input checked="true" type="checkbox" id="Motor Vehicle Theft" value="700,710,711,712,720,721,722,730,731,732" @change="tableRefresh"/>
-                        <label for="Motor Vehicle Theft">Motor Vehicle Theft</label> 
-                    <input checked="true" type="checkbox" id="Narcotics" value="1800,1810,1811,1812,1813,1814,1815,1820,1822,1823,1824,1825,1830,1835,1840,1841,1842,1843,1844,1845,1850,1855,1860,1865,1870,1880,1885" @change="tableRefresh"/>
-                        <label for="Narcotics">Narcotics</label> <br>
-                    <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
-                        <label for="Proactive Police Visit">Proactive Police Visit</label>
-                    <input checked="true" type="checkbox" id="Criminal Damage to Property" value="Criminal Damage to Property" @change="tableRefresh"/>
-                        <label for="Criminal Damage to Property">Criminal Damage to Property</label>
-                    <input checked="true" type="checkbox" id="Assault" value="400,410,411,412,420,421,422,430,431,432,440,441,442,450,451,452,453,810,861,862,863" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Robbery" value="Robbery" @change="tableRefresh"/>
+                        <label for="Robbery">Robbery</label>
+                    <input checked="true" type="checkbox" id="Theft" value="Theft" @change="tableRefresh"/>
+                        <label for="Theft">Theft</label> <br>
+                    <input checked="true" type="checkbox" id="Auto Theft" value="Auto Theft" @change="tableRefresh"/>
+                        <label for="Auto Theft">Auto Theft</label> 
+                    <input checked="true" type="checkbox" id="Narcotics" value="Narcotics" @change="tableRefresh"/>
+                        <label for="Narcotics">Narcotics</label>
+                    <input checked="true" type="checkbox" id="Discharge" value="Discharge" @change="tableRefresh"/>
+                        <label for="Discharge">Discharge</label> <br>
+                    <input checked="true" type="checkbox" id="Vandalism" value="Vandalism,Graffiti" @change="tableRefresh"/>
+                        <label for="Vandalism">Vandalism</label>
+                    <input checked="true" type="checkbox" id="Assault" value="Simple Asasult Dom,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
                         <label for="Assault">Assault</label>
-                    <input checked="true" type="checkbox" id="Weapon" value="2619" @change="tableRefresh"/>
-                        <label for="Weapon">Weapon</label>
+                    <input checked="true" type="checkbox" id="Arson" value="Arson" @change="tableRefresh"/>
+                        <label for="Arson">Arson</label> <br>
                     <input checked="true" type="checkbox" id="Homocide" value="100" @change="tableRefresh"/>
                         <label for="Homocide">Homocide</label>
                     <input checked="true" type="checkbox" id="Murder" value="110,120" @change="tableRefresh"/>
@@ -312,7 +394,7 @@ function createIncident() {
                         <label for="Greater East Side">Greater East Side</label> <br>
                     <input checked="true" type="checkbox" id="West Side" value=3 @change="tableRefresh"/>
                         <label for="West Side">West Side</label>
-                    <input checked="true" type="checkbox" id="Dayton's Bluff" value=4 @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Daytons Bluff" value=4 @change="tableRefresh"/>
                         <label for="Dayton's Bluff">Dayton's Bluff</label> 
                     <input checked="true" type="checkbox" id="Payne/Phalen" value=5 @change="tableRefresh"/>
                         <label for="Payne/Phalen">Payne/Phalen</label> <br> 
