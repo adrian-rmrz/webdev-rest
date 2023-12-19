@@ -1,7 +1,9 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
+let incidentsInfo = ref('')
 let coordChecked = ref(false);
+let limit = ref(1000);
 let crime_url = ref('');
 let dialog_err = ref(false);
 let map = reactive(
@@ -50,11 +52,6 @@ onMounted(() => {
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
 
-    // // Add values to input boxes
-    // document.getElementById('latitude').value
-    // document.getElementById('longitude').value
-    // document.getElementById('address').value
-
     // Drag function
     map.leaflet.on('dragend', () => {
         let center = map.leaflet.getCenter()
@@ -76,6 +73,8 @@ onMounted(() => {
                 document.getElementById('address').value = data.address.road;
             }
         })
+
+        refreshCrimes(limit.value);
     });
 
     // Zoom function
@@ -96,6 +95,8 @@ onMounted(() => {
                 document.getElementById('address').value = data.address.road;
             }
         })
+
+        refreshCrimes(limit.value);
     });
 
     // Get boundaries for St. Paul neighborhoods
@@ -124,14 +125,70 @@ function initializeCrimes() {
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((result) => {
-        console.log('Result:', result);
-
-        // Neighborhood name and incident type
-        
+        updateTable(result);
     }).catch((error) => {
         console.log(error.message);
     });
+}
 
+// Function to retrieve crimes that are within map view
+function refreshCrimes(limit) {
+    let bounds = map.leaflet.getBounds();
+    let nw_corner = bounds.getNorthWest();
+    let se_corner = bounds.getSouthEast();
+
+    let max_lat = nw_corner.lat;
+    let min_lat = se_corner.lat;
+    let max_lng = se_corner.lng;
+    let min_lng = nw_corner.lng;
+
+    let url = crime_url.value + '/incidents?limit=' + limit + '&neighborhood=';
+    let neigh_number = 0;
+    let first_neigh = true;
+
+    for (let neigh_marker of map.neighborhood_markers) {
+        let latitude = neigh_marker.location[0];
+        let longitude = neigh_marker.location[1];
+
+        if (isBetween(latitude, min_lat, max_lat) && isBetween(longitude, min_lng, max_lng)) {
+            if (!first_neigh) {
+                url += ',' + neigh_number;
+            } else {
+                url += neigh_number;
+                first_neigh = false;
+            }
+        }
+        neigh_number += 1;
+    }
+
+    fetch(url).then((response) => {
+        return response.json();
+    }).then((result) => {
+        updateTable(result);
+    }).catch((error) => {
+        console.log(error.message);
+    });
+}
+
+// Function to return if value is between min and max values
+function isBetween(value, min, max) {
+    return value >= min && value <= max;
+}
+
+// Function to update the table with the new values
+function updateTable(data) {
+    incidentsInfo.value = '';
+
+    for (let incident of data) {
+        // Replace incidentsInfo with new incidents
+        incidentsInfo.value += '<tr>'
+        incidentsInfo.value += '<td>' + incident.date + '</td>';
+        incidentsInfo.value += '<td>' + incident.time + '</td>';
+        incidentsInfo.value += '<td>' + incident.case_number + '</td>';
+        incidentsInfo.value += '<td>' + incident.neighborhood_number + '</td>';
+        incidentsInfo.value += '<td>' + incident.incident + '</td>';
+        incidentsInfo.value += '</tr>';
+    }
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -249,14 +306,16 @@ function clampView(latitude, longitude) {
             <div id="leafletmap" class="cell auto"></div>
         </div>
         <table id="crime-list">
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Case Number</th>
-                <th>Neighborhood Name</th>
-                <th>Incident Type</th>
-                <th>Police Grid</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Case Number</th>
+                    <th>Neighborhood Name</th>
+                    <th>Incident Type</th>
+                </tr>
+            </thead>
+            <tbody v-html="incidentsInfo"></tbody>
         </table>
     </div>
 </template>
@@ -360,5 +419,9 @@ input:checked + .slider:before {
 
 #add-input {
     margin-right: 26.5rem;
+}
+
+#crime-list {
+    margin-top: 1rem;
 }
 </style>
