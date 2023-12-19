@@ -1,7 +1,8 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-let incidentsInfo = ref('')
+let incidentsInfo = ref('');
+let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
 let crime_url = ref('');
@@ -122,6 +123,14 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+    fetch(crime_url.value + '/neighborhoods').then((response) => {
+        return response.json();
+    }).then((result) => {
+        neighborhood_name.value = result;
+    }).catch((error) => {
+        console.log(error.message);
+    });
+
     fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
         return response.json();
     }).then((result) => {
@@ -185,7 +194,7 @@ function updateTable(data) {
         incidentsInfo.value += '<td>' + incident.date + '</td>';
         incidentsInfo.value += '<td>' + incident.time + '</td>';
         incidentsInfo.value += '<td>' + incident.case_number + '</td>';
-        incidentsInfo.value += '<td>' + incident.neighborhood_number + '</td>';
+        incidentsInfo.value += '<td>' + neighborhood_name.value[incident.neighborhood_number-1].name + '</td>';
         incidentsInfo.value += '<td>' + incident.incident + '</td>';
         incidentsInfo.value += '</tr>';
     }
