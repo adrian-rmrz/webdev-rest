@@ -2,9 +2,6 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_markers = ref([]);
-let redCrime = ref(['Homicide', 'Robbery', 'Rape', 'Simple Asasult Dom.', 'Agg. Assault Dom.','Agg. Assault']);
-let orangeCrime = ref(['Burglary', 'Theft', 'Auto Theft', 'Arson']);
-let yellowCrime = ref(['Narcotics', 'Discharge', 'Vandalism', 'Graffiti']);
 let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
@@ -473,6 +470,18 @@ function checkUIControls() {
         }
         url += (document.getElementById('Proactive Police Visit').value + ",");
     }
+    if (document.getElementById('Community Event').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Community Event').value + ",");
+    }
+    if (document.getElementById('Criminal Damage').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Criminal Damage').value + ",");
+    }
 
     url += ("&start_date=" + document.getElementById('start_date').value);
     url += ("&end_date=" + document.getElementById('end_date').value);
@@ -491,6 +500,30 @@ function openForm() {
         let dialog = document.getElementById('form-dialog');
         dialog.showModal();
     }
+}
+
+function getRowColor(crime) {
+    let conditionalColor = { 
+        'Homicide' : "colorRed",
+        'Robbery' : "colorRed",
+        'Rape' : "colorRed",
+        'Simple Assault Dom.' : "colorOrange",
+        'Agg. Assault Dom.' : "colorRed",
+        'Agg. Assault' : "colorRed",
+        'Burglary' : "colorOrange",
+        'Theft' : "colorOrange",
+        'Auto Theft' : "colorOrange",
+        'Arson' : "colorOrange",
+        'Narcotics' : "colorYellow",
+        'Discharge' : "colorYellow",
+        'Vandalism' : "colorYellow",
+        'Graffiti' : "colorGreen",
+        'Proactive Police Visit' : "colorYellow",
+        'Criminal Damage' : "colorOrange",
+        'Community Event' : "colorGreen",
+    }
+
+    return conditionalColor[crime];
 }
 
 function closeForm() {
@@ -630,7 +663,7 @@ function createIncident() {
                         <label for="Discharge">Discharge</label> <br>
                     <input checked="true" type="checkbox" id="Vandalism" value="Vandalism,Graffiti" @change="tableRefresh"/>
                         <label for="Vandalism">Vandalism</label>
-                    <input checked="true" type="checkbox" id="Assault" value="Simple Asasult Dom.,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Assault" value="Simple Assault Dom.,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
                         <label for="Assault">Assault</label>
                     <input checked="true" type="checkbox" id="Arson" value="Arson" @change="tableRefresh"/>
                         <label for="Arson">Arson</label> <br>
@@ -638,6 +671,10 @@ function createIncident() {
                         <label for="Homicide">Homicide</label>
                     <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
                         <label for="Proactive Police Visit">Police Visit</label>
+                    <input checked="true" type="checkbox" id="Community Event" value="Community Event" @change="tableRefresh"/>
+                        <label for="Community Event">Community Event</label> <br>
+                    <input checked="true" type="checkbox" id="Criminal Damage" value="Criminal Damage" @change="tableRefresh"/>
+                        <label for="Criminal Damage">Criminal Damage</label>
                 </div>
                 <div class="large-4">
                     <strong>Neighborhood Name</strong><br>
@@ -731,7 +768,7 @@ function createIncident() {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" :class="{ 'colorRed': incident.incident =='Theft', 'colorOrange': incident.incident in orangeCrime, 'colorYellow': incident.incident in yellowCrime}">
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" :id="getRowColor(incident.incident)">
                     <td> {{ incident.date }} </td>
                     <td> {{ incident.time }} </td>
                     <td> {{ incident.case_number }} </td>
@@ -906,14 +943,16 @@ table, th, td {
   background-color: #ab2020;
 }
 
-.colorRed { 
+#colorRed { 
     background-color: #ea1d06ee; 
 }
-.colorYellow { 
+#colorYellow { 
     background-color: #f6d841; 
 }
-.colorOrange { 
+#colorOrange { 
     background-color: #e69026; 
 }
-
+#colorGreen { 
+    background-color: #b4e81b; 
+}
 </style>
