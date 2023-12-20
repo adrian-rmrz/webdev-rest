@@ -2,9 +2,9 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_markers = ref([]);
-let redCrime = ref(['Homicide', 'Robbery', 'Rape', 'Simple Asasult Dom.,Agg. Assault Dom.,Agg. Assault']);
+let redCrime = ref(['Homicide', 'Robbery', 'Rape', 'Simple Asasult Dom.', 'Agg. Assault Dom.','Agg. Assault']);
 let orangeCrime = ref(['Burglary', 'Theft', 'Auto Theft', 'Arson']);
-let yellowCrime = ref(['Narcotics', 'Discharge', 'Vandalism,Graffiti']);
+let yellowCrime = ref(['Narcotics', 'Discharge', 'Vandalism', 'Graffiti']);
 let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
