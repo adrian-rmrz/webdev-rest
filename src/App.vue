@@ -499,26 +499,42 @@ let formBlock = ref("");
 
 function createIncident() {
     //PUT request:
+
+    console.log("Case number: " + formCaseNum.value);
+    console.log("Date time: " + formDateTime.value);
+    console.log("Code: " + formCode.value);
+    console.log("Incident: " + formIncident.value);
+    console.log("Police grid: " + formPoGrid.value);
+    console.log("Nieghborhood number: " + formNeiNum.value);
+    console.log("Block: " + formBlock.value);
+
     let dialog = document.getElementById('form-dialog');
-    let putURL = crime_url + "/new-incident";
+    let putURL = crime_url.value + "/new-incident";
     let newData = {
-        case_number: formCaseNum,
-        data_time: formDateTime,
-        code: formCode,
-        incident: formIncident,
-        police_grid: formPoGrid,
-        neighborhood_number: formNeiNum,
-        block: formBlock,
+        case_number: formCaseNum.value,
+        data_time: formDateTime.value,
+        code: formCode.value,
+        incident: formIncident.value,
+        police_grid: formPoGrid.value,
+        neighborhood_number: formNeiNum.value,
+        block: formBlock.value,
     };
 
-    fetch(putURL, {method: 'PUT',
-    body: JSON.stringify(newData)
-    }).then(response => {
-        console.log(response.status);
-        return response.json();
-    }).then(data => {
+    fetch(putURL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newData)
+    }).then((response) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+    }).then(() => {
+        refreshCrimes(limit.value);
         console.log('PUT request successful:', data);
-    }).catch(error => {
+    }).catch((error) => {
         console.error('Error:', error);
     });
 
