@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-let incidentsInfo = ref('');
+let crime_markers = ref([]);
 let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
@@ -191,10 +191,72 @@ function refreshCrimes(limit) {
         return response.json();
     }).then((result) => {
         crime_table.value = result;
+        
         updateMarkerPopup(result);
     }).catch((error) => {
         console.log(error.message);
     });
+}
+
+function addCrimeMarker(incident) {
+    let address = incident.block;
+    
+    if (!incident.block.includes(" AND ")) {
+        let address_parts = incident.block.split(' ');
+        let number = address_parts[0];
+        let number_parts = number.split('');
+
+        for (let i = 0; i < number_parts.length; i++) {
+            if (number_parts[i] == "X") {
+                number_parts[i] = "0";
+            }
+        }
+
+        number = number_parts.join('');
+        address_parts[0] = number;
+        address = address_parts.join(' ');
+    } else {
+        let address_parts = incident.block.split(' ');
+        let address_arr = [];
+
+        for (let i = 0; i < address_parts.length; i++) {
+            if (address_parts[i] == "AND") {
+                break;
+            } else {
+                address_arr.push(address_parts[i]);
+            }
+        }
+
+        address = address_arr.join(' ');
+    }
+
+    console.log(address);
+    let url = 'https://nominatim.openstreetmap.org/search?q=' + address + ' St Paul Minnesota' + '&format=json&limit=1';
+        
+    fetch(url).then((response) => {
+        return response.json();
+    }).then((data) => {
+        longitude = data[0].lon;
+        latitude = data[0].lat;
+
+        let redMarker = L.divIcon({className: 'redIcon', iconSize: [28, 28]});
+        let mark = L.marker([latitude, longitude], { icon: redMarker });
+        crime_markers.value.push(mark);
+
+        console.log(crime_markers.value);
+        let popup = L.popup().setContent('<p>Date: ' + incident.date + '<br/>Time: ' + incident.time + '<br/>Incident: ' + incident.incident + '</p><button class="button delete-button" type="button" onClick="deletePopup('+ (crime_markers.value.length - 1) + ')">Delete</button>');
+        mark.bindPopup(popup);
+
+        mark.addTo(map.leaflet);
+    }).catch( (error) => {
+        console.error(error);
+    });
+
+    // 
+}
+
+function deletePopup(marker_index) {
+    console.log("Marker Index: " + marker_index);
 }
 
 // Update marker popups with new crimes information
@@ -652,7 +714,7 @@ function createIncident() {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="incident in crime_table"> 
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)"> 
                     <td> {{ incident.date }} </td>
                     <td> {{ incident.time }} </td>
                     <td> {{ incident.case_number }} </td>
@@ -800,5 +862,32 @@ table, th, td {
     margin-top: 1rem;
     text-align: center;
 }
+
+.redIcon {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  margin-left: -115px;
+  
+  border-radius: 50% 50% 50% 0;
+  border: 4px solid #ab2020;
+  width: 2rem;
+  height: 2rem;
+  transform: rotate(-45deg);
+}
+
+.redIcon::after {
+  position: absolute;
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin-left: -5px;
+  margin-top: -5px;
+  background-color: #ab2020;
+}
+
 
 </style>
