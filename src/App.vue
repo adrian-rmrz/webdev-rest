@@ -522,7 +522,6 @@ function getRowColor(crime) {
         'Criminal Damage' : "colorOrange",
         'Community Event' : "colorGreen",
     }
-
     return conditionalColor[crime];
 }
 
