@@ -2,6 +2,9 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_markers = ref([]);
+let redCrime = ref(['Homicide', 'Robbery', 'Rape', 'Simple Asasult Dom.,Agg. Assault Dom.,Agg. Assault']);
+let orangeCrime = ref(['Burglary', 'Theft', 'Auto Theft', 'Arson']);
+let yellowCrime = ref(['Narcotics', 'Discharge', 'Vandalism,Graffiti']);
 let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
@@ -501,6 +504,7 @@ function createIncident() {
     //PUT request:
     let dialog = document.getElementById('form-dialog');
     let putURL = crime_url + "/new-incident";
+    
     let newData = {
         case_number: formCaseNum,
         data_time: formDateTime,
@@ -510,9 +514,14 @@ function createIncident() {
         neighborhood_number: formNeiNum,
         block: formBlock,
     };
+    console.log(newData);
 
-    fetch(putURL, {method: 'PUT',
-    body: JSON.stringify(newData)
+    fetch(putURL, 
+        {method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newData)
     }).then(response => {
         console.log(response.status);
         return response.json();
@@ -615,7 +624,7 @@ function createIncident() {
                         <label for="Discharge">Discharge</label> <br>
                     <input checked="true" type="checkbox" id="Vandalism" value="Vandalism,Graffiti" @change="tableRefresh"/>
                         <label for="Vandalism">Vandalism</label>
-                    <input checked="true" type="checkbox" id="Assault" value="Simple Asasult Dom,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
+                    <input checked="true" type="checkbox" id="Assault" value="Simple Asasult Dom.,Agg. Assault Dom.,Agg. Assault" @change="tableRefresh"/>
                         <label for="Assault">Assault</label>
                     <input checked="true" type="checkbox" id="Arson" value="Arson" @change="tableRefresh"/>
                         <label for="Arson">Arson</label> <br>
@@ -655,7 +664,7 @@ function createIncident() {
                     <input checked="true" type="checkbox" id="Highland" value=15 @change="tableRefresh"/>
                         <label for="Highland">Highland</label>
                     <input checked="true" type="checkbox" id="Summit Hill" value=16 @change="tableRefresh"/>
-                        <label for="Summit Hill">Summit Hill</label>
+                        <label for="Summit Hill">Summit Hill</label> <br>
                     <input checked="true" type="checkbox" id="Capitol River" value=17 @change="tableRefresh"/>
                         <label for="Capitol River">Capitol River</label>
                 </div>
@@ -714,7 +723,7 @@ function createIncident() {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)"> 
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" style="background-color: {{colorTable}};"> 
                     <td> {{ incident.date }} </td>
                     <td> {{ incident.time }} </td>
                     <td> {{ incident.case_number }} </td>
@@ -889,5 +898,14 @@ table, th, td {
   background-color: #ab2020;
 }
 
+.colorRed { 
+    background-color: #df4d04ee; 
+}
+.colorYellow { 
+    background-color: #f7d633; 
+}
+.colorOrange { 
+    background-color: #e79129; 
+}
 
 </style>
