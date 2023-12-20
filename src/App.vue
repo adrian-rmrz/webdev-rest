@@ -467,6 +467,12 @@ function checkUIControls() {
         }
         url += (document.getElementById('Homicide').value + ",");
     }
+    if (document.getElementById('Proactive Police Visit').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Proactive Police Visit').value + ",");
+    }
 
     url += ("&start_date=" + document.getElementById('start_date').value);
     url += ("&end_date=" + document.getElementById('end_date').value);
@@ -630,6 +636,8 @@ function createIncident() {
                         <label for="Arson">Arson</label> <br>
                     <input checked="true" type="checkbox" id="Homicide" value="Homicide" @change="tableRefresh"/>
                         <label for="Homicide">Homicide</label>
+                    <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
+                        <label for="Proactive Police Visit">Police Visit</label>
                 </div>
                 <div class="large-4">
                     <strong>Neighborhood Name</strong><br>
@@ -723,7 +731,7 @@ function createIncident() {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" style="background-color: {{colorTable}};"> 
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" :class="{ 'colorRed': incident.incident =='Theft', 'colorOrange': incident.incident in orangeCrime, 'colorYellow': incident.incident in yellowCrime}">
                     <td> {{ incident.date }} </td>
                     <td> {{ incident.time }} </td>
                     <td> {{ incident.case_number }} </td>
@@ -899,13 +907,13 @@ table, th, td {
 }
 
 .colorRed { 
-    background-color: #df4d04ee; 
+    background-color: #ea1d06ee; 
 }
 .colorYellow { 
-    background-color: #f7d633; 
+    background-color: #f6d841; 
 }
 .colorOrange { 
-    background-color: #e79129; 
+    background-color: #e69026; 
 }
 
 </style>
