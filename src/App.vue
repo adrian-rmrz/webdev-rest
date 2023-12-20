@@ -176,7 +176,7 @@ function refreshCrimes(limit) {
     }
 
     if (neigh_array.length > 0) {
-        url += '&neighborhoods=' + checkNeighborhood(neigh_array);
+        url += '&neighborhood=' + checkNeighborhood(neigh_array);
     }
 
     url += checkUIControls();
