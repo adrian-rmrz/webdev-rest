@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-let incidentsInfo = ref('');
+let crime_markers = ref([]);
 let neighborhood_name = ref([]);
 let coordChecked = ref(false);
 let limit = ref(1000);
@@ -26,23 +26,23 @@ let map = reactive(
             se: {lat: 44.883658, lng: -92.993787}
         },
         neighborhood_markers: [
-            {location: [44.942068, -93.020521], marker: null},
-            {location: [44.977413, -93.025156], marker: null},
-            {location: [44.931244, -93.079578], marker: null},
-            {location: [44.956192, -93.060189], marker: null},
-            {location: [44.978883, -93.068163], marker: null},
-            {location: [44.975766, -93.113887], marker: null},
-            {location: [44.959639, -93.121271], marker: null},
-            {location: [44.947700, -93.128505], marker: null},
-            {location: [44.930276, -93.119911], marker: null},
-            {location: [44.982752, -93.147910], marker: null},
-            {location: [44.963631, -93.167548], marker: null},
-            {location: [44.973971, -93.197965], marker: null},
-            {location: [44.949043, -93.178261], marker: null},
-            {location: [44.934848, -93.176736], marker: null},
-            {location: [44.913106, -93.170779], marker: null},
-            {location: [44.937705, -93.136997], marker: null},
-            {location: [44.949203, -93.093739], marker: null}
+            {location: [44.942068, -93.020521], marker: null, popupContent: 0},
+            {location: [44.977413, -93.025156], marker: null, popupContent: 0},
+            {location: [44.931244, -93.079578], marker: null, popupContent: 0},
+            {location: [44.956192, -93.060189], marker: null, popupContent: 0},
+            {location: [44.978883, -93.068163], marker: null, popupContent: 0},
+            {location: [44.975766, -93.113887], marker: null, popupContent: 0},
+            {location: [44.959639, -93.121271], marker: null, popupContent: 0},
+            {location: [44.947700, -93.128505], marker: null, popupContent: 0},
+            {location: [44.930276, -93.119911], marker: null, popupContent: 0},
+            {location: [44.982752, -93.147910], marker: null, popupContent: 0},
+            {location: [44.963631, -93.167548], marker: null, popupContent: 0},
+            {location: [44.973971, -93.197965], marker: null, popupContent: 0},
+            {location: [44.949043, -93.178261], marker: null, popupContent: 0},
+            {location: [44.934848, -93.176736], marker: null, popupContent: 0},
+            {location: [44.913106, -93.170779], marker: null, popupContent: 0},
+            {location: [44.937705, -93.136997], marker: null, popupContent: 0},
+            {location: [44.949203, -93.093739], marker: null, popupContent: 0}
         ]
     }
 );
@@ -128,25 +128,31 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value + '/neighborhoods').then((response) => {
-        return response.json();
-    }).then((result) => {
-        neighborhood_name.value = result;
+    let fetch_neigh = crime_url.value + '/neighborhoods';
+    let fetch_inc = crime_url.value + '/incidents?limit=1000';
 
+    Promise.all([fetch(fetch_neigh), fetch(fetch_inc)])
+    .then((response) => {
+        return Promise.all([response[0].json(), response[1].json()]);
+    }).then((result) => {
+        neighborhood_name.value = result[0];
+
+        for (let i = 0; i < map.neighborhood_markers.length; i++) {
+            let neigh_marker = map.neighborhood_markers[i];
+            let latitude = neigh_marker.location[0];
+            let longitude = neigh_marker.location[1];
+
+            let mark = L.marker([latitude, longitude]);
+            mark.addTo(map.leaflet);
+            map.neighborhood_markers[i].marker = mark;
+            map.neighborhood_markers[i].popupContent = 0;
+        }
         
+        crime_table.value = result[1];
+        updateMarkerPopup(result[1]);
     }).catch((error) => {
         console.log(error.message);
     });
-
-    fetch(crime_url.value + '/incidents?limit=1000').then((response) => {
-        return response.json();
-    }).then((result) => {
-        updateTable(result);
-    }).catch((error) => {
-        console.log(error.message);
-    });
-
-
 }
 
 // Function to retrieve crimes that are within map view
@@ -184,9 +190,87 @@ function refreshCrimes(limit) {
     fetch(url).then((response) => {
         return response.json();
     }).then((result) => {
-        updateTable(result);
+        crime_table.value = result;
+        
+        updateMarkerPopup(result);
     }).catch((error) => {
         console.log(error.message);
+    });
+}
+
+function addCrimeMarker(incident) {
+    let address = incident.block;
+    
+    if (!incident.block.includes(" AND ")) {
+        let address_parts = incident.block.split(' ');
+        let number = address_parts[0];
+        let number_parts = number.split('');
+
+        for (let i = 0; i < number_parts.length; i++) {
+            if (number_parts[i] == "X") {
+                number_parts[i] = "0";
+            }
+        }
+
+        number = number_parts.join('');
+        address_parts[0] = number;
+        address = address_parts.join(' ');
+    } else {
+        let address_parts = incident.block.split(' ');
+        let address_arr = [];
+
+        for (let i = 0; i < address_parts.length; i++) {
+            if (address_parts[i] == "AND") {
+                break;
+            } else {
+                address_arr.push(address_parts[i]);
+            }
+        }
+
+        address = address_arr.join(' ');
+    }
+
+    console.log(address);
+    let url = 'https://nominatim.openstreetmap.org/search?q=' + address + ' St Paul Minnesota' + '&format=json&limit=1';
+        
+    fetch(url).then((response) => {
+        return response.json();
+    }).then((data) => {
+        longitude = data[0].lon;
+        latitude = data[0].lat;
+
+        let redMarker = L.divIcon({className: 'redIcon', iconSize: [28, 28]});
+        let mark = L.marker([latitude, longitude], { icon: redMarker });
+        crime_markers.value.push(mark);
+
+        console.log(crime_markers.value);
+        let popup = L.popup().setContent('<p>Date: ' + incident.date + '<br/>Time: ' + incident.time + '<br/>Incident: ' + incident.incident + '</p><button class="button delete-button" type="button" onClick="deletePopup('+ (crime_markers.value.length - 1) + ')">Delete</button>');
+        mark.bindPopup(popup);
+
+        mark.addTo(map.leaflet);
+    }).catch( (error) => {
+        console.error(error);
+    });
+
+    // 
+}
+
+function deletePopup(marker_index) {
+    console.log("Marker Index: " + marker_index);
+}
+
+// Update marker popups with new crimes information
+function updateMarkerPopup(data) {
+    map.neighborhood_markers.forEach((mark) => {
+        mark.popupContent = 0;
+    });
+
+    data.forEach((crime) => {
+        map.neighborhood_markers[crime.neighborhood_number-1].popupContent += 1;
+    });
+
+    map.neighborhood_markers.forEach((mark) => {
+        mark.marker.bindPopup(mark.popupContent.toString());
     });
 }
 
@@ -195,20 +279,28 @@ function isBetween(value, min, max) {
     return value >= min && value <= max;
 }
 
-// Function to update the table with the new values
-function updateTable(data) {
-    incidentsInfo.value = '';
-
-    for (let incident of data) {
-        // Replace incidentsInfo with new incidents
-        incidentsInfo.value += '<tr>'
-        incidentsInfo.value += '<td>' + incident.date + '</td>';
-        incidentsInfo.value += '<td>' + incident.time + '</td>';
-        incidentsInfo.value += '<td>' + incident.case_number + '</td>';
-        incidentsInfo.value += '<td>' + neighborhood_name.value[incident.neighborhood_number-1].name + '</td>';
-        incidentsInfo.value += '<td>' + incident.incident + '</td>';
-        incidentsInfo.value += '</tr>';
-    }
+// Function to delete incident
+function deleteIncident(case_number) {
+    fetch(crime_url.value + '/remove-incident', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_number: case_number }),
+    })
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(() => {
+        refreshCrimes(limit.value);
+        console.log("Incident " + case_number + " deleted.");
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -252,7 +344,7 @@ function goCoord() {
             console.error(error);
         });
     } else {
-        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + '' + '&format=json&limit=1';
+        let url = 'https://nominatim.openstreetmap.org/search?q=' + address_el.value + ' St Paul Minnesota' + '&format=json&limit=1';
         
         fetch(url).then( (response) => {
             return response.json();
@@ -569,7 +661,8 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>Date Range</strong><br>
-                    <select id="start_date" @change="tableRefresh">
+                    <p>Start Date:</p>
+                    <select id="start_date" class="dropdown" @change="tableRefresh">
                         <option selected="selected" value="2014-01-01" > 2014-01-01</option>
                         <option value="2015-01-01" > 2015-01-01</option>
                         <option value="2016-01-01" > 2016-01-01</option>
@@ -581,7 +674,8 @@ function createIncident() {
                         <option value="2022-01-01" > 2022-01-01</option>
                         <option value="2023-01-01" > 2023-01-01</option>
                     </select> 
-                    <select id="end_date" @change="tableRefresh">
+                    <p>End Date:</p>
+                    <select id="end_date" class="dropdown" @change="tableRefresh">
                         <option value="2015-01-01" > 2015-01-01</option>
                         <option value="2016-01-01" > 2016-01-01</option>
                         <option value="2017-01-01" > 2017-01-01</option>
@@ -597,7 +691,7 @@ function createIncident() {
                 </div>
                 <div class="large-2">
                     <strong>Max Incidents</strong><br>
-                    <select name="max_incidents" id="max_incidents" @change="tableRefresh">
+                    <select name="max_incidents" class="dropdown" id="max_incidents" @change="tableRefresh">
                         <option value="10">10</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -616,9 +710,19 @@ function createIncident() {
                     <th>Case Number</th>
                     <th>Neighborhood Name</th>
                     <th>Incident Type</th>
+                    <th>Delete Incident</th>
                 </tr>
             </thead>
-            <tbody v-html="incidentsInfo"></tbody>
+            <tbody>
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)"> 
+                    <td> {{ incident.date }} </td>
+                    <td> {{ incident.time }} </td>
+                    <td> {{ incident.case_number }} </td>
+                    <td> {{ neighborhood_name[ incident.neighborhood_number-1 ].name }} </td>
+                    <td> {{ incident.incident }} </td>
+                    <button class="button delete-button" type="button" @click="deleteIncident(incident.case_number)">Delete</button>
+                </tr>
+            </tbody>
         </table>
     </div>
 </template>
@@ -736,10 +840,54 @@ input:checked + .slider:before {
     margin-bottom: 5%;
 }
 
-table, th, td {
-    margin-top: 1rem;
-    border: 1.5px solid black;
+.dropdown {
+    width: 8rem;
+}
+
+.delete-button {
+    background-color: #D32323;
+    width: 6rem;
+    margin: auto;
+}
+
+.delete-button:hover {
+    background-color: #ab2020;
+}
+
+thead th {
     text-align: center;
 }
+
+table, th, td {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.redIcon {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  margin-left: -115px;
+  
+  border-radius: 50% 50% 50% 0;
+  border: 4px solid #ab2020;
+  width: 2rem;
+  height: 2rem;
+  transform: rotate(-45deg);
+}
+
+.redIcon::after {
+  position: absolute;
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin-left: -5px;
+  margin-top: -5px;
+  background-color: #ab2020;
+}
+
 
 </style>
