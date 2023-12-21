@@ -530,28 +530,24 @@ function closeForm() {
     dialog.close();
 }
 
-let formCaseNum = ref("");
-let formDateTime = ref("");
-let formCode = ref("");
-let formIncident = ref("");
-let formPoGrid = ref("");
-let formNeiNum = ref("");
-let formBlock = ref("");
+function closeAbout() {
+    let dialog = document.getElementById('about-dialog');
+    dialog.close();
+}
 
 function createIncident() {
     //PUT request:
     let dialog = document.getElementById('form-dialog');
     let putURL = crime_url + "/new-incident";
     
-    let newData = {
-        case_number: formCaseNum,
-        data_time: formDateTime,
-        code: formCode,
-        incident: formIncident,
-        police_grid: formPoGrid,
-        neighborhood_number: formNeiNum,
-        block: formBlock,
-    };
+    let formCaseNum = document.getElementById('formCaseNum').value;
+    let formDateTime = document.getElementById('formDateTime').value;
+    let formCode = document.getElementById('formCode').value;
+    let formIncident = document.getElementById('formIncident').value;
+    let formPoGrid = document.getElementById('formPoGrid').value;
+    let formNeiNum = document.getElementById('formNeiNum').value;
+    let formBlock = document.getElementById('formBlock').value;
+
     console.log(newData);
 
     fetch(putURL, 
@@ -559,17 +555,28 @@ function createIncident() {
         headers: { 
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newData)
+        body: JSON.stringify({ case_number: formCaseNum,
+        data_time: formDateTime,
+        code: formCode,
+        incident: formIncident,
+        police_grid: formPoGrid,
+        neighborhood_number: formNeiNum,
+        block: formBlock }),
     }).then(response => {
         console.log(response.status);
         return response.json();
     }).then(data => {
-        console.log('PUT request successful:', data);
+        console.log('Incident Added', data);
     }).catch(error => {
         console.error('Error:', error);
     });
 
     dialog.close();
+}
+
+function openAbout() {
+    let dialog = document.getElementById('about-dialog');
+        dialog.showModal();
 }
 
 </script>
@@ -578,30 +585,43 @@ function createIncident() {
     
     <div class="grid-x grid-padding-x">
             <button type="button" class="cell large-auto button" @click="openForm" style="background-color: green;">New Incident Form</button>
-            <button type="button" class="cell large-auto button" @click="" style="background-color: rebeccapurple;">About</button>
+            <button type="button" class="cell large-auto button" @click="openAbout" style="background-color: rebeccapurple;">About</button>
     </div>
+    <dialog id="about-dialog">
+        <button class="button" id="closebutton" type="button" @click="closeAbout">close</button>
+        <h1 style="font-family: monospace;margin-bottom: 1%;"> Demo:</h1>
+        <center><iframe width="1000" height="472" src="https://www.youtube.com/embed/dQw4w9WgXcQ" style=";"> </iframe></center>
+        <h2 style="font-family: monospace;margin-bottom: 1%;margin-top: 2%;"> Developers: </h2>
+        <div class="grid-container">
+            <div class="grid-x grid-padding-x">
+                <div class="large-2"> <img src="/src/mypic2.jpg" alt="mypic2"> </div>
+                <div class="large-8" style="margin-left: 2%;font-family: monospace; font-size: 1.5rem;"> My name is Rainsei. I am currently a super senior at UST with major in General Business Management and three minors in Philosophy, Economics and Computer Science.
+                    I was born and raised in Cambodia and have been in Minnesota as an international student for about 8 years. </div>
+            </div>
+        </div>
+    </dialog>
     <dialog id="form-dialog">
         <h1 class="dialog-header">Form</h1>
         <label class="dialog-label">case_number</label>
-        <input id="formCaseNum" class="dialog-input" type="text" v-model="formCaseNum" placeholder="########" />
+        <input id="formCaseNum" class="dialog-input" type="text"  placeholder="########" />
         <br/>
         <label class="dialog-label">Date_Time</label>
-        <input id="formDate" class="dialog-input" type="text" v-model="formDateTime" placeholder="YY-MM-DDT00:00:00" />
+        <input id="formDate" class="dialog-input" type="text" placeholder="YY-MM-DDT00:00:00" />
         <br/>
         <label class="dialog-label">Code</label>
-        <input id="formCode" class="dialog-input" type="text" v-model="formCode" placeholder="#"/>
+        <input id="formCode" class="dialog-input" type="text" placeholder="#"/>
         <br/>
         <label class="dialog-label">Incident</label>
-        <input id="formIncident" class="dialog-input" type="text" v-model="formIncident" placeholder="" />
+        <input id="formIncident" class="dialog-input" type="text" placeholder="" />
         <br/>
         <label class="dialog-label">police_grid</label>
-        <input id="formPoGrid" class="dialog-input" type="text" v-model="formPoGrid" placeholder="" />
+        <input id="formPoGrid" class="dialog-input" type="text" placeholder="" />
         <br/>
         <label class="dialog-label">neighborhood_number</label>
-        <input id="formNeiNum" class="dialog-input" type="text" v-model="formNeiNum" placeholder="" />
+        <input id="formNeiNum" class="dialog-input" type="text" placeholder="" />
         <br/>
         <label class="dialog-label">block</label>
-        <input id="formBlock" class="dialog-input" type="text" v-model="formBlock" placeholder="" />
+        <input id="formBlock" class="dialog-input" type="text" placeholder="" />
         <br/>
         <button class="button" id="create" type="button" @click="createIncident">Create</button>
         <button class="button" id="closebutton" type="button" @click="closeForm">Cancel</button>
@@ -953,5 +973,26 @@ table, th, td {
 }
 #colorGreen { 
     background-color: #b4e81b; 
+}
+
+::backdrop {
+  background-image: linear-gradient(
+    135deg,
+    rgb(255, 34, 0),
+    rgb(204, 134, 49),
+    rgb(30, 255, 221),
+    rgb(8, 95, 157)
+  );
+  opacity: 0.75;
+}
+
+#about-dialog {
+    width: 50%;
+    height: 80%;
+}
+
+#form-dialog {
+    width: 50%;
+    height: 95%;
 }
 </style>
