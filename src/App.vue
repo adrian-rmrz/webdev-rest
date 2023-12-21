@@ -547,7 +547,7 @@ function createIncident() {
     
     <div class="grid-x grid-padding-x">
             <button type="button" class="cell large-auto button" @click="openForm" style="background-color: green;">New Incident Form</button>
-            <button type="button" class="cell large-auto button" @click="" style="background-color: rebeccapurple;">About</button>
+            <button type="button" class="cell large-auto button" onclick="window.location.href='html/about.html';" style="background-color: rebeccapurple;">About</button>
     </div>
     <dialog id="form-dialog">
         <h1 class="dialog-header">Form</h1>

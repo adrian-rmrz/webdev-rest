@@ -8,3 +8,17 @@ html {
     width: 100%;
     height: 100%;
 }
+
+.profile-picture {
+    width: 18rem;
+    height: 24rem;
+    margin: .5rem;
+}
+
+.b {
+    font-weight: bolder;
+}
+
+.em {
+    font-style: italic;
+}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About Page</title>
+    <!-- Foundation CSS -->
+    <link rel="stylesheet" href="../css/foundation.css">
+    <!-- Leaflet -->
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="../css/style.css"/>
+    <!-- Vue App -->
+    <script type="module" src="../src/main.js"></script>
+</head>
+<body>
+    <button type="button" class="cell large-auto button" onclick="window.location.href='../index.html';" style="background-color: rebeccapurple;">Homepage</button>
+    <!-- Adrian -->
+    <div class="grid-x large-cell-block align-center">
+        <!-- Image -->
+        <img class="profile-picture" src="../assets/headshot.jpg">
+        
+        <!-- Description -->
+        <div class="content-section large-6 align-center" style="margin: auto 1rem;">
+            <h2 class="text-center">About Me</h2>
+            <hr>
+            <p class="text-center">
+                Hello, my name is Adrian Ramirez. I'm currently a senior at the University of St. Thomas, graduating December of 2023. I'm majoring in computer science with a minor in electrical engineering. My interests in the field include embedded systems and full-stack development.
+            </p>
+        </div>
+    </div>
+
+    <!-- Rainsei -->
+    <div class="grid-x large-cell-block align-center">
+        <!-- Description -->
+        <div class="content-section large-6 align-center" style="margin: auto 1rem;">
+            <h2 class="text-center">About Me</h2>
+            <hr>
+            <p class="text-center">
+                
+            </p>
+        </div>
+
+        <!-- Image -->
+        <img class="profile-picture" src="">
+    </div>
+
+    <!-- About the Website -->
+    <div class="grid-x large-cell-block align-center">
+        <!-- Description -->
+        <div class="content-section large-6" style="margin: auto 1rem;">
+            <h2 class="text-center">About the Website</h2>
+            <hr>
+            <ul>
+                <li class="b em">Framework:</li>
+                <ul>
+                    <li><b>Foundation: </b>CSS framework used for all the styling</li>
+                    <li><b>Vue: </b>Javascript framework used for homepage and all the javascript</li>
+                </ul>
+                <li class="b em">APIs:</li>
+                <ul>
+                    <li><b>Nominatim: </b>Geolocating API; Used to find all the locations using either address or coordinates, will give both address and coordinates so it was used to convert from address to coordinates and vice versa</li>
+                    <li><b>Leaflet: </b>Map API; Used to generate the map and all the markers for locations</li>
+                    <li><b>St. Paul Crime: </b>Custom API; Used to grab crime data from St. Paul crime database</li>
+                </ul>
+            </ul>
+        </div>
+
+        <!-- Video -->
+        <div class="content-section large-6" style="margin: auto 1rem;">
+            <h2 class="text-center">Usage</h2>
+            <hr>
+            <video width="960" height="540" controls>
+                <source src="../assets/video.mp4" type="video/ogg">
+            </video>
+        </div>
+
+        <div class="content-section large-6" style="margin: auto 1rem;">
+            <h2 class="text-center">Interesting Findings</h2>
+            <hr>
+            <ul>
+                <li>Due to the implementation of the address and coordinate bars, it's easy to convert between addresses and coordinates of those addresses and vice versa</li>
+                <li>There isn't really that big of a disparity between different neighborhoods and their crime rates in the 1000 most recent crimes</li>
+                <li>The majority of crimes committed in St. Paul are thefts</li>
+                <li>The amount of homicides in each of the individual neighborhoods since 2014 is less than or equal to 10</li>
+                <li>Since 2014, St. Paul has had at least 1 homicide in each of the neighborhoods</li>
+                <li>There is a high disparity range in narcotics, the lowest being in the tens to the highest being in the 200s</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Foundation CSS Framework: include before closing <body> tag -->
+    <script src="../js/vendor/jquery.js"></script>
+    <script src="../js/vendor/what-input.js"></script>
+    <script src="../js/vendor/foundation.js"></script>
+    <script type="application/javascript">
+        $(document).foundation();
+    </script>
+</body>
+</html>
