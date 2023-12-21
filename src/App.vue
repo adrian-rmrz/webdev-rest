@@ -582,6 +582,16 @@ function getRowColor(crime) {
     return conditionalColor[crime];
 }
 
+function openFilter() {
+    let dialog = document.getElementById('filterDiag');
+    dialog.showModal();
+}
+
+function closeFilter() {
+    let dialog = document.getElementById('filterDiag');
+    dialog.close();
+}
+
 </script>
 
 <template>
@@ -652,6 +662,8 @@ function getRowColor(crime) {
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+        <button class="button" @click="openFilter" style="width: 100%;">Filters</button>
+        <dialog id="filterDiag">
         <div class="grid-container">
             <div class="grid-x grid-padding-x">
                 <div class="large-4">
@@ -765,6 +777,8 @@ function getRowColor(crime) {
                 </div>
             </div>
         </div>
+        <button class="button" @click="closeFilter" style="width: 100%;">Close</button>
+    </dialog>
         <table id="crime-list">
             <thead>
                 <tr>
@@ -968,10 +982,10 @@ table, th, td {
 ::backdrop {
   background-image: linear-gradient(
     135deg,
-    rgba(255, 34, 0, 0.626),
-    rgba(214, 93, 23, 0.512),
-    rgba(197, 118, 21, 0.538),
-    rgba(200, 153, 14, 0.526)
+    rgb(59, 58, 57),
+    rgb(89, 88, 88),
+    rgb(84, 84, 83),
+    rgb(57, 57, 56)
   );
   opacity: 0.75;
 }
@@ -979,5 +993,10 @@ table, th, td {
 #form-dialog {
     width: 50%;
     height: 95%;
+}
+
+#filterDiag {
+    width: 55%;
+    height: 38%;
 }
 </style>
