@@ -464,6 +464,24 @@ function checkUIControls() {
         }
         url += (document.getElementById('Homicide').value + ",");
     }
+    if (document.getElementById('Proactive Police Visit').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Proactive Police Visit').value + ",");
+    }
+    if (document.getElementById('Community Event').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Community Event').value + ",");
+    }
+    if (document.getElementById('Criminal Damage').checked){
+        if (url == "") {
+            url += "&incident=";
+        }
+        url += (document.getElementById('Criminal Damage').value + ",");
+    }
 
     url += ("&start_date=" + document.getElementById('start_date').value);
     url += ("&end_date=" + document.getElementById('end_date').value);
@@ -539,6 +557,29 @@ function createIncident() {
     });
 
     dialog.close();
+}
+
+function getRowColor(crime) {
+    let conditionalColor = { 
+        'Homicide' : "colorRed",
+        'Robbery' : "colorRed",
+        'Rape' : "colorRed",
+        'Simple Assault Dom.' : "colorOrange",
+        'Agg. Assault Dom.' : "colorRed",
+        'Agg. Assault' : "colorRed",
+        'Burglary' : "colorOrange",
+        'Theft' : "colorOrange",
+        'Auto Theft' : "colorOrange",
+        'Arson' : "colorOrange",
+        'Narcotics' : "colorYellow",
+        'Discharge' : "colorYellow",
+        'Vandalism' : "colorYellow",
+        'Graffiti' : "colorGreen",
+        'Proactive Police Visit' : "colorYellow",
+        'Criminal Damage' : "colorOrange",
+        'Community Event' : "colorGreen",
+    }
+    return conditionalColor[crime];
 }
 
 </script>
@@ -637,6 +678,12 @@ function createIncident() {
                         <label for="Arson">Arson</label> <br>
                     <input checked="true" type="checkbox" id="Homicide" value="Homicide" @change="tableRefresh"/>
                         <label for="Homicide">Homicide</label>
+                    <input checked="true" type="checkbox" id="Proactive Police Visit" value="Proactive Police Visit" @change="tableRefresh"/>
+                        <label for="Proactive Police Visit">Police Visit</label>
+                    <input checked="true" type="checkbox" id="Community Event" value="Community Event" @change="tableRefresh"/>
+                        <label for="Community Event">Community Event</label> <br>
+                    <input checked="true" type="checkbox" id="Criminal Damage" value="Criminal Damage" @change="tableRefresh"/>
+                        <label for="Criminal Damage">Criminal Damage</label>
                 </div>
                 <div class="large-4">
                     <strong>Neighborhood Name</strong><br>
@@ -671,7 +718,7 @@ function createIncident() {
                     <input checked="true" type="checkbox" id="Highland" value=15 @change="tableRefresh"/>
                         <label for="Highland">Highland</label>
                     <input checked="true" type="checkbox" id="Summit Hill" value=16 @change="tableRefresh"/>
-                        <label for="Summit Hill">Summit Hill</label>
+                        <label for="Summit Hill">Summit Hill</label> <br>
                     <input checked="true" type="checkbox" id="Capitol River" value=17 @change="tableRefresh"/>
                         <label for="Capitol River">Capitol River</label>
                 </div>
@@ -730,7 +777,7 @@ function createIncident() {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)"> 
+                <tr v-for="incident in crime_table" @click="addCrimeMarker(incident)" :id="getRowColor(incident.incident)"> 
                     <td> {{ incident.date }} </td>
                     <td> {{ incident.time }} </td>
                     <td> {{ incident.case_number }} </td>
@@ -905,5 +952,32 @@ table, th, td {
   background-color: #ab2020;
 }
 
+#colorRed { 
+    background-color: #ea1d0686;
+}
+#colorYellow { 
+    background-color: #f6d84179; 
+}
+#colorOrange { 
+    background-color: #e690268d; 
+}
+#colorGreen { 
+    background-color: #b5e81b8a; 
+}
 
+::backdrop {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 34, 0, 0.626),
+    rgba(214, 93, 23, 0.512),
+    rgba(197, 118, 21, 0.538),
+    rgba(200, 153, 14, 0.526)
+  );
+  opacity: 0.75;
+}
+
+#form-dialog {
+    width: 50%;
+    height: 95%;
+}
 </style>
