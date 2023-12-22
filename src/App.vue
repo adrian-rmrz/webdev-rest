@@ -592,6 +592,16 @@ function closeFilter() {
     dialog.close();
 }
 
+function openLegend() {
+    let dialog = document.getElementById('legendDiag');
+    dialog.showModal();
+}
+
+function closeLegend() {
+    let dialog = document.getElementById('legendDiag');
+    dialog.close();
+}
+
 </script>
 
 <template>
@@ -662,7 +672,18 @@ function closeFilter() {
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
-        <button class="button" @click="openFilter" style="width: 100%;">Filters</button>
+        <button class="button" @click="openFilter" style="width: 78%; margin-right: 2%;">Filters</button>
+        <button class="button" @click="openLegend" style="width: 20%;">Legend</button>
+        <dialog id="legendDiag">
+            <div><ul class="legend">
+                <li><span id="colorRed"></span> Very Big Moral Impact </li><br>
+                <li><span id="colorOrange"></span> Big Moral Impact </li><br>
+                <li><span id="colorYellow"></span> Some Moral Impact</li><br>
+                <li><span id="colorGreen"></span> Minimal Moral Impact</li><br>
+            </ul>
+                <button class="button" @click="closeLegend" style="width: 100%;">Close</button>
+            </div>
+        </dialog>
         <dialog id="filterDiag">
         <div class="grid-container">
             <div class="grid-x grid-padding-x">
@@ -996,7 +1017,29 @@ table, th, td {
 }
 
 #filterDiag {
-    width: 55%;
-    height: 38%;
+    width: 60%;
+    height: 36%;
 }
+
+.legend 
+{
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+}
+
+.legend li 
+{
+      display: inline-block;
+      margin-right: 20px;
+      font-size: 14px;
+}
+
+.legend span {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      border: 1px solid #000;
+    }
 </style>
